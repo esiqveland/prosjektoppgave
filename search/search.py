@@ -2,7 +2,6 @@ import pickle
 import getopt
 import sys
 import math
-import patentreader
 import struct
 import operator
 
@@ -250,12 +249,12 @@ outputFile = open(output_file, 'w')
 
 
 # Start handling query
-
+title = None
+desc = None
 # Read out title and description from query xml
-title, desc = patentreader.parse_query(input_file_q)
-
-# Remove first "Relevant documents will describe" of description
-desc = desc[33:]
+with open(input_file_q) as myfile:
+    title = myfile.readline()
+    desc = title
 
 query = title
 query = parseQuery(query)
@@ -289,7 +288,6 @@ for score, docID in resultTitle:
         finalResult.append((score,docID))
 
 finalResult = sorted(finalResult, reverse = True)
-
 
 
 result = finalResult
