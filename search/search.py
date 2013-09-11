@@ -96,22 +96,6 @@ def build_dictionary():
     return dictionary
 
 
-def threeRares(queryList):
-    first = second = third = (2000,2000)
-    for element in queryList:
-        count = dictionary[element][1] + dictionary[element][2]
-
-        if count < first[0]:
-            third = second
-            second = first
-            first = (count,element)
-        elif count < second[0]:
-            third = second
-            second = (count,element)
-        elif count < third[0]:
-            third = (count,element)
-    return [first[1],second[1],third[1]]
-
 # index = 1 -> title
 # index = 2 -> abstract
 def search(query, index):
@@ -252,77 +236,20 @@ outputFile = open(output_file, 'w')
 
 # Start handling query
 title = None
-desc = None
 # Read out title and description from query xml
 with open(input_file_q) as myfile:
     title = myfile.readline()
-    desc = title
 
-query = title
-query = parseQuery(query)
+query = parseQuery(title)
+print query
+result = search(query,1)
+print result
 
-q1 = parseQuery(title)
-q2 = parseQuery(desc)
+finalResult = sorted(result, reverse = True)
 
-q1r = threeRares(q1)
-q2r = threeRares(q2)
+for score, fileId in finalResult:
+    outputFile.write(str(fileId)+' ')
 
-resultTitle = search(q1+q2r,1)
-
-query = desc
-query = parseQuery(query)
-
-
-
-resultDesc = search(q1r+q2,2)
-
-# print resultTitle
-# print resultDesc
-finalResult = []
-for score, docID in resultTitle:
-    found = 0
-    for sc, dID in resultDesc:
-        if docID == dID:
-            finalResult.append((1*score + 1 * sc, docID))
-            found = 1
-            break
-    if found == 0:
-        finalResult.append((score,docID))
-
-finalResult = sorted(finalResult, reverse = True)
-
-
-result = finalResult
-fileNameResult = []
-for score, fileId in result:
-    fileNameResult.append(fileId)
-
-# strippedres = []
-
-
-
-# for score, fileID in result:
-#     if fileID not in scoreDict:
-#         scoreDict[fileID] = [score]
-#     else:
-#         scoreDict[fileID].append(score)
-
-# result = search(query,2)[:20]
-# for score, fileID in result:
-#     if fileID not in scoreDict:
-#         scoreDict[fileID] = [score]
-#     else:
-#         scoreDict[fileID].append(score)
-
-# print scoreDict
-
-# query += ipcDesc
-
-# result = search(query,2)[:20]
-
-
-
-# Count classes and vote on correct class
 
 postingsFile.close()
 outputFile.close()
