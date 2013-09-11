@@ -10,53 +10,11 @@ import operator
 
 # return description of most popular class
 
-
 def getListofTupleelement(list):
     tempList = []
     for x,y in list:
         tempList.append(lookUpName(y))
     return tempList
-
-
-def checkAgainstGoodAndBadList(list):
-    goodFile = open(input_file_q[:-4] + '-qrels+ve.txt')
-    badFile = open(input_file_q[:-4] + '-qrels-ve.txt')
-    gscore = bscore = 0
-
-    resList = getListofTupleelement(list)
-
-    goodlist = []
-    line = goodFile.readline()
-    while line:
-        goodlist.append(line[:-2])
-        line = goodFile.readline()
-    lengthGood = len(goodlist)
-    goodFile.close()
-
-    badlist = []
-    line = badFile.readline()
-    while line:
-        badlist.append(line[:-2])
-        line = badFile.readline()
-    lengthBad = len(badlist)
-    badFile.close()
-
-    for item in goodlist:
-        if item in resList:
-            gscore += 1
-
-    for item in goodlist:
-        if item in resList:
-            bscore += 1
-
-    goodScore = float(gscore) / float(lengthGood)
-    badScore = float(bscore) / float(lengthBad)
-
-    return goodScore, badScore
-
-
-
-
 
 
 def fetchTopClassDesc(result):
@@ -68,7 +26,6 @@ def fetchTopClassDesc(result):
                 classCounter[ipc] = classCounter[ipc] + 1
             else:
                 classCounter[ipc] = 1
-
 
     top = (0,0)
     for k,v in classCounter.iteritems():
@@ -94,38 +51,22 @@ def uniqueAndCounterList(query):
             queryWithoutDuplicates.append(term)
             queryCounter.append(1)
 
-
     return queryWithoutDuplicates,queryCounter
 
 def parseQuery(query):
-    stemmer = nltk.PorterStemmer()
+    query = query.lower()
+    return query.split()
 
-    # Split up in tokens
-    sentences = nltk.sent_tokenize(query.lower())
-    newQuery = []
-    for sentence in sentences:
-        newQuery += nltk.word_tokenize(sentence)
-
-    # stem and remove special charaters
-    returnQuery = []
-    for term in newQuery:
-        term = re.sub('[^a-z0-9]', '', term)
-        term = stemmer.stem(term)
-        if term == '':
-            continue
-        returnQuery.append(term)
-
-    return returnQuery
 
 def getPosting(term):
     postingsFile.seek(dictionary[term][0])
     title = []
     abstract = []
-    for i in range(0,dictionary[term][1]):
+    for i in xrange(0,dictionary[term][1]):
         docID = struct.unpack('i',postingsFile.read(4))[0]
         termFreq = struct.unpack('i',postingsFile.read(4))[0]
         title.append((docID,termFreq))
-    for i in range(0,dictionary[term][2]):
+    for i in xrange(0,dictionary[term][2]):
         docID = struct.unpack('i',postingsFile.read(4))[0]
         termFreq = struct.unpack('i',postingsFile.read(4))[0]
         abstract.append((docID,termFreq))
@@ -224,7 +165,7 @@ def search(query, index):
             # Loop over all the postings for the token in the title or
             # the abstract depending on index and save them in the
             # document structure
-            for i in range(0,dictionary[token][index]):
+            for i in xrange(0,dictionary[token][index]):
                 docID = int(struct.unpack("i",postingsFile.read(4))[0])
                 termFreq = int(struct.unpack("i",postingsFile.read(4))[0])
                 # The structure is doc -> [0,2,0,0,3] for example. documents is a
@@ -233,7 +174,7 @@ def search(query, index):
                 # and each position in the list points to a counter of the same token.
                 if(docID not in documents):
                     documents[docID] = []
-                    for j in range(0,length):
+                    for j in xrange(0,length):
                         documents[docID].append(0)
                     # terms[token] is a dictionary which controls which index in the list a
                 # corresponding counter should be stored in.
@@ -243,7 +184,7 @@ def search(query, index):
     scoreComparer = []
     endScore = []
     # initialize scoreComparer with all zeros
-    for i in range(0,length):
+    for i in xrange(0,length):
         scoreComparer.append(0)
     docLength = 0
     # Find tf,df,idf and wt
@@ -292,7 +233,6 @@ def search(query, index):
     lengthTemp = len(endScore)
 
     return endScore
-    return [x[1] for x in endScore]
 
 ### --- MAIN --- ###
 
@@ -422,8 +362,6 @@ for score, fileId in result:
 
 
 # Count classes and vote on correct class
-
-print checkAgainstGoodAndBadList(result)
 
 postingsFile.close()
 outputFile.close()
