@@ -236,8 +236,6 @@ mappingDict = None
 
 # Open input/output files
 postingsFile = open(input_file_p,'rb')
-outputFile = open(output_file, 'w')
-
 
 # Start handling query
 title = None
@@ -253,12 +251,8 @@ print result
 
 finalResult = sorted(result, reverse = True)
 
-for score, fileId in finalResult:
-    outputFile.write(str(fileId)+' ')
-
 
 postingsFile.close()
-outputFile.close()
 
 endtime = time.time()
 print "search and filewrite time:", endtime - starttime
