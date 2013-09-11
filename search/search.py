@@ -195,7 +195,6 @@ def search(query, index):
     return endScore
 
 ### --- MAIN --- ###
-starttime = time.time()
 
 # Handle input arguents
 mapping_file = input_file_d = input_file_p = input_file_q = output_file = None
@@ -224,8 +223,14 @@ if input_file_d == None or input_file_p == None or output_file == None or input_
     sys.exit(2)
 
 # ------ VARIABLES ------- #
+starttime = time.time()
 
 dictionary = build_dictionary()
+
+endtime = time.time()
+print "build_dict time: ", endtime - starttime
+starttime = endtime
+
 mappingDict = None
 
 
@@ -239,6 +244,7 @@ title = None
 # Read out title and description from query xml
 with open(input_file_q) as myfile:
     title = myfile.readline()
+
 
 query = parseQuery(title)
 print query
@@ -255,6 +261,6 @@ postingsFile.close()
 outputFile.close()
 
 endtime = time.time()
-print endtime - starttime
+print "search and filewrite time:", endtime - starttime
 
 
