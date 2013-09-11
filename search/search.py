@@ -1,6 +1,4 @@
 import pickle
-import nltk
-import re
 import getopt
 import sys
 import math
@@ -17,33 +15,11 @@ def getListofTupleelement(list):
     return tempList
 
 
-def fetchTopClassDesc(result):
-    classCounter = dict()
-    for fileID in result:
-        if len(lookUpIPC(fileID)) > 0:
-            ipc = lookUpIPC(fileID)[0]
-            if ipc in classCounter:
-                classCounter[ipc] = classCounter[ipc] + 1
-            else:
-                classCounter[ipc] = 1
-
-    top = (0,0)
-    for k,v in classCounter.iteritems():
-        if v > top[1]:
-            top = (k,v)
-
-    print "Top class is " + top[0] + " certainty: " + str(float(top[1]) / float(len(result)))[:4]
-    print "Candidates: ", classCounter
-    return ipcDict[top[0]]
 
 def uniqueAndCounterList(query):
-    stopWords = nltk.corpus.stopwords.words('english')
     queryWithoutDuplicates = []
     queryCounter = []
     for term in query:
-        # skip stop words
-        if term in stopWords:
-            continue
         if term in queryWithoutDuplicates:
             pos = queryWithoutDuplicates.index(term)
             queryCounter[pos] = queryCounter[pos] + 1
@@ -267,10 +243,6 @@ if input_file_d == None or input_file_p == None or output_file == None or input_
 dictionary = build_dictionary()
 mappingDict = None
 
-ipcFile = open('ipcDict.txt')
-ipcDict = pickle.load(ipcFile)
-ipcFile.close()
-
 
 # Open input/output files
 postingsFile = open(input_file_p,'rb')
@@ -324,18 +296,8 @@ result = finalResult
 fileNameResult = []
 for score, fileId in result:
     fileNameResult.append(fileId)
-# print fetchTopClassDesc(fileNameResult)
 
 # strippedres = []
-
-# for element in result:
-#     if lookUpIPC(element[1])[0] == 'B08B' or lookUpIPC(element[1])[0] == 'D06F':
-#         strippedres.append(element)
-# result = strippedres
-
-
-
-
 
 
 
@@ -354,7 +316,6 @@ for score, fileId in result:
 
 # print scoreDict
 
-# ipcDesc = fetchTopClassDesc(result)
 # query += ipcDesc
 
 # result = search(query,2)[:20]
