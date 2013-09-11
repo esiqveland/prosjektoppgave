@@ -4,6 +4,7 @@ import sys
 import math
 import struct
 import operator
+import time
 
 # return description of most popular class
 
@@ -210,6 +211,7 @@ def search(query, index):
     return endScore
 
 ### --- MAIN --- ###
+starttime = time.time()
 
 # Handle input arguents
 mapping_file = input_file_d = input_file_p = input_file_q = output_file = None
@@ -325,5 +327,7 @@ for score, fileId in result:
 postingsFile.close()
 outputFile.close()
 
+endtime = time.time()
+print endtime - starttime
 
 
