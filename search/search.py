@@ -229,7 +229,6 @@ dictionary = build_dictionary()
 
 endtime = time.time()
 print "build_dict time: ", endtime - starttime
-starttime = endtime
 
 mappingDict = None
 
@@ -243,6 +242,7 @@ title = None
 with open(input_file_q) as myfile:
     title = myfile.readline()
 
+starttime = time.time()
 
 query = parseQuery(title)
 print query
@@ -255,6 +255,6 @@ finalResult = sorted(result, reverse = True)
 postingsFile.close()
 
 endtime = time.time()
-print "search and filewrite time:", endtime - starttime
+print "search time:", endtime - starttime
 
 
