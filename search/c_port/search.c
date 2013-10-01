@@ -174,12 +174,11 @@ void build_postingslist(dictionary_entry* dict_entry) {
         return;
     }
     if(dict_entry->occurences == 0) {
-        dict_entry->posting = NULL;
         return;
     }
     
     FILE* f_postings = fopen(postings_file, "rb");
-    fseek(f_postings, dict_entry->byte_offset, SEEK_SET); //SEEK_SET is beginning of file
+    fseek(f_postings, dict_entry->byte_offset, SEEK_SET); //SEEK_SET is offset from beginning of file
     
     postings_entry* entry = init_alloc_postings_entry();
     dict_entry->posting = entry;
@@ -202,26 +201,26 @@ void handle_token(char* token) {
         printf("handle token: %s\n", token);
     }
     dictionary_entry* dict_entry = find_dict_entry(token);
-    build_postingslist(dict_entry);
+    if(dict_entry)
+        build_postingslist(dict_entry);
 }
 
 void add_doc_score(doc_score* doc_scores, doc_score* doc_score_to_add) {
     HASH_ADD_INT(doc_scores, docid, doc_score_to_add);
 }
 
-doc_score* alloc_init_doc_score(int query_terms) {
-    doc_score* score = malloc(sizeof(doc_score));
-    score->scores = malloc(sizeof(float)*query_terms);
+void alloc_init_doc_score(doc_score** score, int query_terms) {
+    *score = malloc(sizeof(doc_score));
+    (*score)->scores = malloc(sizeof(float)*query_terms);
     int i;
     for(i = 0; i < query_terms; i++) {
-        score->scores[i] = 0.0f;
+        (*score)->scores[i] = 0.0f;
     }
-    return score;
 }
 
-doc_score* lookup_doc_score(doc_score* doc_score_hash, int docid) {
+doc_score* lookup_doc_score(doc_score** doc_score_hash, int docid) {
     doc_score* score;
-    HASH_FIND_INT(doc_score_hash, &docid, score);
+    HASH_FIND_INT(*doc_score_hash, &docid, score);
     return score;
 }
 
@@ -242,9 +241,9 @@ void score_query(query* query_dict) {
  
         int j;
         for(j = 0; j < dict_entry->occurences; j++) {
-            doc_score* score = lookup_doc_score(doc_scores, posting->docId);
-            if(score == NULL) {
-                score = alloc_init_doc_score(1);
+            doc_score* score = lookup_doc_score(&doc_scores, posting->docId);
+            if(!score) {
+                alloc_init_doc_score(&score, 1);
                 score->docid = posting->docId;
             }
         }
