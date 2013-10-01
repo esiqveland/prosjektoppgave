@@ -18,14 +18,14 @@ typedef struct {
 	uint32_t occurences;
 	uint32_t occurences_abstract;
     postings_entry* posting;
-    UT_hash_handle hh;         /* makes this structure hashable */
+    UT_hash_handle hhd;         /* makes this structure hashable */
 } dictionary_entry;
 
 /* query has a number of terms (strings) */
 typedef struct {
     char* term;
     float score;
-    UT_hash_handle hh;
+    UT_hash_handle hhq;
 } query;
 
 typedef struct {
@@ -45,14 +45,14 @@ dictionary_entry *dictionary = NULL;    /* important! initialize to NULL for uth
 char* postings_file = "target/postings.txt";    /* filepath to postings.txt file */
 
 void hash_dict_entry(dictionary_entry *dict_entry) {
-    HASH_ADD_KEYPTR(hh, dictionary, dict_entry->word, strlen(dict_entry->word), dict_entry);
+    HASH_ADD_KEYPTR(hhd, dictionary, dict_entry->word, strlen(dict_entry->word), dict_entry);
 }
 
 dictionary_entry* find_dict_entry(char* word) {
     dictionary_entry* dict_entry;
-    HASH_FIND_STR(dictionary, word, dict_entry);
+    HASH_FIND(hhd, dictionary, word, strlen(word), dict_entry);
     if(dict_entry == NULL)
-        printf("lookup: %s failed\n", word);
+        printf("dictionary lookup: %s failed\n", word);
     return dict_entry;
 }
 
@@ -61,10 +61,11 @@ postings_entry* init_alloc_postings_entry() {
     entry->next = NULL;
     return entry;
 }
-query* init_alloc_query() {
-    query* query = malloc(sizeof(query));
-    return query;
+void init_alloc_query(query** q) {
+    *q = malloc(sizeof(query));
+    (*q)->term = NULL;
 }
+
 dictionary_entry* init_alloc_dictionary_entry() {
     dictionary_entry* dict = malloc(sizeof(dictionary_entry));
     dict->posting = NULL;
@@ -88,12 +89,11 @@ void build_dictionary(const char* input_file_dict) {
 }
 
 void print_dictionary() {
-    dictionary_entry *dict_entry, *tmp;
+    dictionary_entry *dict_entry;
     
-    for(dict_entry=dictionary; dict_entry != NULL; dict_entry=dict_entry->hh.next) {
-//    HASH_ITER(hh, dictionary, dict_entry, tmp) {
+    for(dict_entry=dictionary; dict_entry != NULL; dict_entry=dict_entry->hhd.next) {
         if(dict_entry->posting == NULL) {
-            //continue;
+            continue;
         }
         printf("%s %" SCNu32 " %" SCNu32 " %" SCNu32 "\n", dict_entry->word, dict_entry->byte_offset,
                 dict_entry->occurences, dict_entry->occurences_abstract);
@@ -109,23 +109,22 @@ void print_dictionary() {
     }
 }
 
+void hash_query_entry(query** query_dict, query* myq) {
+    HASH_ADD_KEYPTR(hhq, *query_dict, myq->term, strlen(myq->term), myq);
+    if(DEBUG)
+        printf("hashed q entry: key:%s leng:%f\n", myq->term, myq->score);
+}
+
 void add_term_to_query(query** query_dict, char* term) {
-    // if query in hashtable, increase score:
+    // if term in query already, increase score:
     query* myq = NULL;
 
-    if(DEBUG)
-        printf("void add_term_to_query(query** query_dict, char* term, dictionary_entry* dict_entry): %s\n", term);
-
-    if(*query_dict != NULL) {
-        if(DEBUG)
-            printf("query_dict not null\n");
-        HASH_FIND_STR(*query_dict, term, myq);
-    }
-    if(myq == NULL) {
-        myq = init_alloc_query();
-        myq->term = strdup(term);
+    HASH_FIND(hhq, *query_dict, term, strlen(term), myq);
+    if(!myq) {
+        init_alloc_query(&myq);
+        myq->term = term;
         myq->score = 1.0f;
-        HASH_ADD_KEYPTR(hh, *query_dict, myq->term, strlen(myq->term), myq);
+        hash_query_entry(query_dict, myq);
     } else {
         myq->score += 1.0f;
     }
@@ -139,7 +138,8 @@ void trim_string(char* querystr) {
     // Write new null terminator
     *(end+1) = 0;
 }
-void split_query_into_terms(char* querystr, query** query_dict) {
+
+void split_query_into_terms(query** query_dict, char* querystr) {
     char* myquery = strdup(querystr);
 
     char* reentrant_saver;
@@ -149,21 +149,22 @@ void split_query_into_terms(char* querystr, query** query_dict) {
     
     while(token != NULL) {
         dictionary_entry* dict_entry = find_dict_entry(token);
-        if(DEBUG)
-            printf("found token: %s\n", token);
-
+        
         if(dict_entry != NULL) {
+            if(DEBUG)
+                printf("found token in dictionary: %s\n", token);
             add_term_to_query(query_dict, token);
         }
         token = strtok_r(NULL, " \n\r\t", &reentrant_saver);
     }
-    //free(myquery); // this crashes program?!
+    free(myquery);
 }
 
 void print_query_struct(query** query_dict) {
     query* entry;
-    for(entry=*query_dict; entry != NULL; entry=entry->hh.next) {
-        printf("%s: %f\n", entry->term, entry->score);
+    printf("query_dict:\n");
+    for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
+        printf("\t%s: %f\n", entry->term, entry->score);
     }
 }
 
@@ -234,7 +235,7 @@ void score_query(query* query_dict) {
     doc_score* doc_scores = NULL;
 
     query* entry;
-    for(entry=query_dict; entry != NULL; entry=entry->hh.next) {
+    for(entry=query_dict; entry != NULL; entry=entry->hhq.next) {
 
         dictionary_entry* dict_entry = find_dict_entry(entry->term);
         postings_entry* posting = dict_entry->posting;
@@ -254,30 +255,31 @@ void score_query(query* query_dict) {
 void prefetch_tokens(query** query_dict) {
     query* entry;
 
-    for(entry=*query_dict; entry != NULL; entry=entry->hh.next) {
+    for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
         handle_token(entry->term);
     }
 
 }
 
-void search(char* querystr) {
+void doSearch(char* querystr) {
     
     if(DEBUG)
         printf("given query: %s\n", querystr);
     query* query_dict = NULL;
     
-    split_query_into_terms(querystr, &query_dict);
-    //print_query_struct(&query_dict);
+    split_query_into_terms(&query_dict, querystr);
+    print_query_struct(&query_dict);
 
-    //prefetch_tokens(&query_dict);
-    //score_query(query_dict);
+    prefetch_tokens(&query_dict);
+    score_query(query_dict);
 }
 
 int main(int argc, char* argv[])
 {
     build_dictionary("target/dictionary.txt");
-    print_dictionary();
-    search(argv[1]);
+
+    doSearch(argv[1]);
+    
     print_dictionary();
 }
 
