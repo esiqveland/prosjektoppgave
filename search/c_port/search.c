@@ -40,6 +40,7 @@ typedef struct {
     char* term;
     float score;
     UT_hash_handle hhq;
+    dictionary_entry* dict_entry;
 } query;
 
 typedef struct {
@@ -129,7 +130,7 @@ void hash_query_entry(query** query_dict, query* myq) {
         printf("hashed q entry: key:%s leng:%f\n", myq->term, myq->score);
 }
 
-void add_term_to_query(query** query_dict, char* term) {
+void add_term_to_query(query** query_dict, char* term, dictionary_entry* dict_entry) {
     // if term in query already, increase score:
     query* myq = NULL;
 
@@ -138,6 +139,7 @@ void add_term_to_query(query** query_dict, char* term) {
         init_alloc_query(&myq);
         myq->term = term;
         myq->score = 1.0f;
+        myq->dict_entry = dict_entry;
         hash_query_entry(query_dict, myq);
     } else {
         myq->score += 1.0f;
@@ -167,7 +169,7 @@ void split_query_into_terms(query** query_dict, char* querystr) {
         if(dict_entry != NULL) {
             if(DEBUG)
                 printf("found token in dictionary: %s\n", token);
-            add_term_to_query(query_dict, token);
+            add_term_to_query(query_dict, token, dict_entry);
         }
         token = strtok_r(NULL, " \n\r\t", &reentrant_saver);
     }
@@ -182,7 +184,12 @@ void print_query_struct(query** query_dict) {
     }
 }
 
-void build_postingslist(dictionary_entry* dict_entry) {
+void build_postingslist(char* token) {
+    dictionary_entry* dict_entry = find_dict_entry(token);
+    if(!dict_entry) {
+        return;
+    }
+
     // return if we have already read the postingslist for this term
     if(dict_entry->posting != NULL) {
         return;
@@ -194,31 +201,38 @@ void build_postingslist(dictionary_entry* dict_entry) {
     FILE* f_postings = fopen(postings_file, "rb");
     fseek(f_postings, dict_entry->byte_offset, SEEK_SET); //SEEK_SET is offset from beginning of file
     
-    postings_entry* entry;
-    init_alloc_postings_entry(&entry);
-    dict_entry->posting = entry;
+    postings_entry* postentry;
+    init_alloc_postings_entry(&postentry);
+    dict_entry->posting = postentry;
     postings_entry* prev;
+    
+    if(DEBUG)
+        printf("build postlist for token: %s, times: %"SCNu32"\n", token, dict_entry->occurences);
 
-    int i;
+    uint32_t i = 0;
     for(i = 0; i < dict_entry->occurences; i++) {
-        fread(entry, 8, 1, f_postings);
-        init_alloc_postings_entry(&(entry->next));
-        prev = entry;
-        entry = entry->next;
+        fread(&(postentry->docId), 8, 1, f_postings);
+        //fread(&(postentry->term_frequency), 4, 1, f_postings);
+        
+        prev = postentry;
+        postings_entry* tmp;
+        init_alloc_postings_entry(&tmp);
+        postentry->next = tmp;
+        postentry = tmp;
+
     }
     //free(entry); // breaks all
     prev->next = NULL;
     fclose(f_postings);
+
 }
 
 void handle_token(char* token) {
     if(DEBUG) {
         printf("handle token: %s\n", token);
     }
-    dictionary_entry* dict_entry = find_dict_entry(token);
-    if(dict_entry) {
-        build_postingslist(dict_entry);
-    }
+    char* copy = strdup(token);
+    build_postingslist(copy);
 }
 
 void add_doc_score(doc_score** doc_scores, doc_score* doc_score_to_add) {
@@ -277,6 +291,7 @@ void prefetch_tokens(query** query_dict) {
     for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
         handle_token(entry->term);
     }
+
 }
 
 void doSearch(char* querystr) {
@@ -288,7 +303,9 @@ void doSearch(char* querystr) {
     split_query_into_terms(&query_dict, querystr);
 
     print_query_struct(&query_dict);
-    prefetch_tokens(&query_dict);    
+
+    prefetch_tokens(&query_dict);
+
     score_query(&query_dict);
 }
 
@@ -344,8 +361,6 @@ void startLocalServer(){
         
         doSearch(p.msg);
         
-        print_dictionary();
-        
         printf("Done\n");
         
     }
@@ -358,7 +373,6 @@ int main(int argc, char* argv[])
     build_dictionary("target/dictionary.txt");
     if(argc > 1) {
         doSearch(argv[1]);
-        print_dictionary();
     } else {
         startLocalServer();
     }
