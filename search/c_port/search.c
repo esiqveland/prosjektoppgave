@@ -6,14 +6,28 @@
 #include <math.h>
 #include <ctype.h>
 #include "uthash/uthash.h"
+#include <unistd.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+
 
 #define DEFAULT_TERM_NUM 5
 #define DEBUG 1
 
+#define SERVERIP "192.168.0.100"
+#define MYPORT "4950"    // the port users will be connecting to
+#define SERVERPORT "4951"
+
+#define MAXBUFLEN 128
+
 typedef struct postings_entry postings_entry;
 
 typedef struct {
-	char* word;
+    char* word;
 	uint32_t byte_offset;
 	uint32_t occurences;
 	uint32_t occurences_abstract;
@@ -205,8 +219,8 @@ void handle_token(char* token) {
         build_postingslist(dict_entry);
 }
 
-void add_doc_score(doc_score* doc_scores, doc_score* doc_score_to_add) {
-    HASH_ADD_INT(doc_scores, docid, doc_score_to_add);
+void add_doc_score(doc_score** doc_scores, doc_score* doc_score_to_add) {
+    HASH_ADD_INT(*doc_scores, docid, doc_score_to_add);
 }
 
 void alloc_init_doc_score(doc_score** score, int query_terms) {
@@ -235,7 +249,6 @@ void score_query(query* query_dict) {
 
     query* entry;
     for(entry=query_dict; entry != NULL; entry=entry->hhq.next) {
-
         dictionary_entry* dict_entry = find_dict_entry(entry->term);
         postings_entry* posting = dict_entry->posting;
  
@@ -245,6 +258,7 @@ void score_query(query* query_dict) {
             if(!score) {
                 alloc_init_doc_score(&score, 1);
                 score->docid = posting->docId;
+                add_doc_score(&doc_scores, score);
             }
         }
 
@@ -273,12 +287,78 @@ void doSearch(char* querystr) {
     score_query(query_dict);
 }
 
+void startLocalServer(){
+    int i,n;
+    int sockfd;
+    
+    struct sockaddr_in servaddr, cliaddr, useraddr;
+    socklen_t len;
+    
+    char mesg[MAXBUFLEN];
+    
+    sockfd=socket(AF_INET,SOCK_DGRAM,0);
+    
+    bzero(&servaddr,sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    servaddr.sin_port=htons(32001);
+    
+    bzero(&useraddr,sizeof(useraddr));
+    useraddr.sin_family = AF_INET;
+    
+    bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
+    
+    printf("starting server...\n");
+    
+    typedef struct {
+        __uint32_t ip;
+        __uint16_t port;
+        char msg[MAXBUFLEN];
+    } payload;
+    
+    payload p;
+    
+    for(;;)
+    {
+        printf("Ready for query...\n");
+        bzero(&p,sizeof(p));
+        len = sizeof(cliaddr);
+        n = recvfrom(sockfd,&p,sizeof(p),0,(struct sockaddr *)&cliaddr,&len);
+        
+        useraddr.sin_addr.s_addr = p.ip;
+        useraddr.sin_port = p.port;
+        
+        printf("port: %hu, ip: %u\n",p.port,p.ip);
+        printf("query: %s\n",p.msg);
+        
+        //We have a query, do the search
+        
+        printf("-------------------------------------------------------\n");
+        printf("executing query: %s\n",p.msg);
+        printf("-------------------------------------------------------\n");
+        
+        doSearch(p.msg);
+        
+      
+        print_dictionary();
+        
+        printf("Done\n");
+        
+    }
+    
+    close(sockfd);
+}
+
 int main(int argc, char* argv[])
 {
     build_dictionary("target/dictionary.txt");
-
-    doSearch(argv[1]);
+    if(argc > 2) {
+        doSearch(argv[1]);
+    } else {
+        startLocalServer();
+    }
+    //doSearch(argv[1]);
     
-    print_dictionary();
+    //print_dictionary();
 }
 
