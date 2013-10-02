@@ -70,11 +70,11 @@ dictionary_entry* find_dict_entry(char* word) {
     return dict_entry;
 }
 
-postings_entry* init_alloc_postings_entry() {
-    postings_entry* entry = malloc(sizeof(postings_entry));
-    entry->next = NULL;
-    return entry;
+void init_alloc_postings_entry(postings_entry** entry) {
+    *entry = malloc(sizeof(postings_entry));
+    (*entry)->next = NULL;
 }
+
 void init_alloc_query(query** q) {
     *q = malloc(sizeof(query));
     (*q)->term = NULL;
@@ -194,18 +194,19 @@ void build_postingslist(dictionary_entry* dict_entry) {
     FILE* f_postings = fopen(postings_file, "rb");
     fseek(f_postings, dict_entry->byte_offset, SEEK_SET); //SEEK_SET is offset from beginning of file
     
-    postings_entry* entry = init_alloc_postings_entry();
+    postings_entry* entry;
+    init_alloc_postings_entry(&entry);
     dict_entry->posting = entry;
     postings_entry* prev;
 
     int i;
     for(i = 0; i < dict_entry->occurences; i++) {
         fread(entry, 8, 1, f_postings);
-        entry->next = init_alloc_postings_entry();
+        init_alloc_postings_entry(&(entry->next));
         prev = entry;
         entry = entry->next;
     }
-    //free(entry);
+    //free(entry); // breaks all
     prev->next = NULL;
     fclose(f_postings);
 }
@@ -215,8 +216,9 @@ void handle_token(char* token) {
         printf("handle token: %s\n", token);
     }
     dictionary_entry* dict_entry = find_dict_entry(token);
-    if(dict_entry)
+    if(dict_entry) {
         build_postingslist(dict_entry);
+    }
 }
 
 void add_doc_score(doc_score** doc_scores, doc_score* doc_score_to_add) {
@@ -244,12 +246,16 @@ void destroy_doc_score(doc_score* score) {
     score->scores = NULL;
 }
 
-void score_query(query* query_dict) {
+void score_query(query** query_dict) {
     doc_score* doc_scores = NULL;
 
     query* entry;
-    for(entry=query_dict; entry != NULL; entry=entry->hhq.next) {
+    for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
+        
         dictionary_entry* dict_entry = find_dict_entry(entry->term);
+        if(!dict_entry) {
+            printf("could not find dict_entry for: %s\n", entry->term);
+        }
         postings_entry* posting = dict_entry->posting;
  
         int j;
@@ -271,7 +277,6 @@ void prefetch_tokens(query** query_dict) {
     for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
         handle_token(entry->term);
     }
-
 }
 
 void doSearch(char* querystr) {
@@ -281,10 +286,10 @@ void doSearch(char* querystr) {
     query* query_dict = NULL;
     
     split_query_into_terms(&query_dict, querystr);
-    print_query_struct(&query_dict);
 
-    prefetch_tokens(&query_dict);
-    score_query(query_dict);
+    print_query_struct(&query_dict);
+    prefetch_tokens(&query_dict);    
+    score_query(&query_dict);
 }
 
 void startLocalServer(){
@@ -352,13 +357,11 @@ void startLocalServer(){
 int main(int argc, char* argv[])
 {
     build_dictionary("target/dictionary.txt");
-    if(argc > 2) {
+    if(argc > 1) {
         doSearch(argv[1]);
     } else {
         startLocalServer();
     }
-    //doSearch(argv[1]);
-    
-    //print_dictionary();
+    print_dictionary();
 }
 
