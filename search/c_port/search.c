@@ -13,7 +13,7 @@
 typedef struct postings_entry postings_entry;
 
 typedef struct {
-	char* word;
+    char* word;
 	uint32_t byte_offset;
 	uint32_t occurences;
 	uint32_t occurences_abstract;
@@ -205,8 +205,8 @@ void handle_token(char* token) {
         build_postingslist(dict_entry);
 }
 
-void add_doc_score(doc_score* doc_scores, doc_score* doc_score_to_add) {
-    HASH_ADD_INT(doc_scores, docid, doc_score_to_add);
+void add_doc_score(doc_score** doc_scores, doc_score* doc_score_to_add) {
+    HASH_ADD_INT(*doc_scores, docid, doc_score_to_add);
 }
 
 void alloc_init_doc_score(doc_score** score, int query_terms) {
@@ -235,7 +235,6 @@ void score_query(query* query_dict) {
 
     query* entry;
     for(entry=query_dict; entry != NULL; entry=entry->hhq.next) {
-
         dictionary_entry* dict_entry = find_dict_entry(entry->term);
         postings_entry* posting = dict_entry->posting;
  
@@ -245,6 +244,7 @@ void score_query(query* query_dict) {
             if(!score) {
                 alloc_init_doc_score(&score, 1);
                 score->docid = posting->docId;
+                add_doc_score(&doc_scores, score);
             }
         }
 
