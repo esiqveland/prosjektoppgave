@@ -339,7 +339,6 @@ void startLocalServer(){
         
         doSearch(p.msg);
         
-      
         print_dictionary();
         
         printf("Done\n");
@@ -352,8 +351,9 @@ void startLocalServer(){
 int main(int argc, char* argv[])
 {
     build_dictionary("target/dictionary.txt");
-    if(argc > 2) {
+    if(argc > 1) {
         doSearch(argv[1]);
+        print_dictionary();
     } else {
         startLocalServer();
     }
