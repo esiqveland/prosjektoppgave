@@ -352,8 +352,11 @@ void startLocalServer(){
 int main(int argc, char* argv[])
 {
     build_dictionary("target/dictionary.txt");
-
-    startLocalServer();
+    if(argc > 2) {
+        doSearch(argv[1]);
+    } else {
+        startLocalServer();
+    }
     //doSearch(argv[1]);
     
     //print_dictionary();
