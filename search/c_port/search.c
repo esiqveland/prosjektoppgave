@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <time.h>
 
 
 #define DEFAULT_TERM_NUM 5
@@ -25,6 +26,7 @@
 #define MAXBUFLEN 128
 
 typedef struct postings_entry postings_entry;
+long long wall_clock_time();
 
 typedef struct {
     char* word;
@@ -173,7 +175,7 @@ void split_query_into_terms(query** query_dict, char* querystr) {
         }
         token = strtok_r(NULL, " \n\r\t", &reentrant_saver);
     }
-    free(myquery);
+    //free(myquery);
 }
 
 void print_query_struct(query** query_dict) {
@@ -359,7 +361,13 @@ void startLocalServer(){
         printf("executing query: %s\n",p.msg);
         printf("-------------------------------------------------------\n");
         
+        long long before = wall_clock_time();
         doSearch(p.msg);
+        long long after = wall_clock_time();
+        long long el = after-before;
+        float mytime = (float)el/1000000000.0;
+        printf("ELAPSED: %f s\n\n", mytime);
+
         
         printf("Done\n");
         
@@ -372,10 +380,34 @@ int main(int argc, char* argv[])
 {
     build_dictionary("target/dictionary.txt");
     if(argc > 1) {
+  
+        long long before = wall_clock_time();
+
         doSearch(argv[1]);
+        
+        long long after = wall_clock_time();
+        long long el = after-before;
+        float mytime = (float)el/1000000000.0;
+        
+        printf("ELAPSED: %f s\n\n", mytime);
     } else {
         startLocalServer();
     }
     print_dictionary();
+}
+
+
+long long wall_clock_time()
+{
+#ifdef __linux__
+    struct timespec tp;
+    clock_gettime(CLOCK_REALTIME, &tp);
+    return (long long)(tp.tv_nsec + (long long)tp.tv_sec * 1000000000ll);
+#else
+#warning "Your timer resoultion might be too low. Compile on Linux and link with librt"
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (long long)(tv.tv_usec * 1000 + (long long)tv.tv_sec * 1000000000ll);
+#endif
 }
 
