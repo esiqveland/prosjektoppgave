@@ -310,13 +310,11 @@ void doSearch(char* querystr) {
 }
 
 void startLocalServer(){
-    int i,n;
     int sockfd;
+    ssize_t n;
     
     struct sockaddr_in servaddr, cliaddr, useraddr;
     socklen_t len;
-    
-    char mesg[MAXBUFLEN];
     
     sockfd=socket(AF_INET,SOCK_DGRAM,0);
     
@@ -345,13 +343,15 @@ void startLocalServer(){
         printf("Ready for query...\n");
         bzero(&p,sizeof(p));
         len = sizeof(cliaddr);
+        
         n = recvfrom(sockfd,&p,sizeof(p),0,(struct sockaddr *)&cliaddr,&len);
         
         useraddr.sin_addr.s_addr = p.ip;
         useraddr.sin_port = p.port;
         
-        printf("port: %hu, ip: %u\n",p.port,p.ip);
+        printf("port: %hu, ip: %s\n",ntohs(p.port),inet_ntoa(useraddr.sin_addr));
         printf("query: %s\n",p.msg);
+        
         
         //We have a query, do the search
         
