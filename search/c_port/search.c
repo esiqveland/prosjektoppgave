@@ -173,7 +173,7 @@ void split_query_into_terms(query** query_dict, char* querystr) {
         }
         token = strtok_r(NULL, " \n\r\t", &reentrant_saver);
     }
-    free(myquery);
+    //free(myquery);
 }
 
 void print_query_struct(query** query_dict) {
