@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     int i,n;
     int sockfd;
     
-    struct sockaddr_in servaddr;
+    struct sockaddr_in servaddr, useraddr, cliaddr;
     socklen_t len;
     
     char mesg[MAXBUFLEN];
@@ -29,10 +29,14 @@ int main(int argc, char *argv[])
     printf("setup socket...\n");
     
     sockfd=socket(AF_INET,SOCK_DGRAM,0);
+
+    //Client netinfo
+    bzero(&useraddr,sizeof(useraddr));
+    useraddr.sin_family = AF_INET;
     
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    servaddr.sin_addr.s_addr = inet_addr("192.168.0.102");
     servaddr.sin_port=htons(32001);;
     
     bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
@@ -55,7 +59,19 @@ int main(int argc, char *argv[])
     printf("-------------------------------------------------------\n");
     printf("sent query: %s\n",p.msg);
     printf("-------------------------------------------------------\n");
-    
+
+    printf("Ready for query...\n");
+    bzero(&p,sizeof(p));
+
+    char stringBuffer[1024];
+
+    len = sizeof(cliaddr);
+        
+    n = recvfrom(sockfd,stringBuffer,1024,0,(struct sockaddr *)&cliaddr,&len);  
+
+    printf("Received: %s\n",stringBuffer);
+
+
     close(sockfd);
     
 }

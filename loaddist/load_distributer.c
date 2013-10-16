@@ -10,9 +10,6 @@
 #include <netdb.h>
 #include <time.h>
 
-#define MYPORT "4950"    // the port users will be connecting to
-#define SERVERPORT "4951"
-
 #define MAXBUFLEN 1024
 #define NODE_IP_START_IP "192.168.0.100"
 #define NODE_IP_START_IP_NUM 100
@@ -43,15 +40,16 @@ void setup(){
     nodeaddr.sin_family = AF_INET;
     nodeaddr.sin_port=htons(32001);
     
-    char * node_address[7];
+    char * node_address[8];
     
-    node_address[0] = "192.168.0.101";
-   	node_address[1] = "192.168.0.102";
-   	node_address[2] = "192.168.0.102";
-   	node_address[3] = "192.168.0.103";
-   	node_address[4] = "192.168.0.104";
-   	node_address[5] = "192.168.0.105";
-   	node_address[6] = "192.168.0.106";
+    node_address[0] = "192.168.0.102";
+   	node_address[1] = "192.168.0.201";
+   	node_address[2] = "192.168.0.202";
+   	node_address[3] = "192.168.0.203";
+   	node_address[4] = "192.168.0.204";
+   	node_address[5] = "192.168.0.205";
+   	node_address[6] = "192.168.0.206";
+    node_address[7] = "192.168.0.207";
     
     bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
     
@@ -85,7 +83,7 @@ void setup(){
         // We have a request, send to a working node
         
         // Select node
-        int node = rand() % 7;
+        int node = 0;
         nodeaddr.sin_addr.s_addr = htonl(*node_address[node]);
         
         printf("Sending message to node number %d\n",node);
