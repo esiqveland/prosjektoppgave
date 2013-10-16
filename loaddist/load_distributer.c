@@ -27,7 +27,7 @@ void setup(){
     //Load distributer netinfo
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr("192.168.0.102"); //TODO: Pull ip from network interface
+    servaddr.sin_addr.s_addr = inet_addr("192.168.0.194"); //TODO: Pull ip from network interface
     servaddr.sin_port=htons(32001);
     
     //Client netinfo
@@ -86,7 +86,8 @@ void setup(){
         int node = 0;
         nodeaddr.sin_addr.s_addr = htonl(*node_address[node]);
         
-        printf("Sending message to node number %d\n",node);
+        printf("Sending message to node number %d: %s\n",node, node_address[node]);
+	printf("Message:\n%s\n", p.msg);
         sendto(sockfd,&p,sizeof(p),0,(struct sockaddr *)&nodeaddr,sizeof(nodeaddr));
     }
     close(sockfd);
