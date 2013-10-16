@@ -85,7 +85,8 @@ void setup(){
         int node = (rand() % 2) + 1;
         nodeaddr.sin_addr.s_addr = htonl(node_address[node]);
         
-        printf("Sending message to node number %d\n",node);
+        printf("Sending message to node number %d: %s\n",node, node_address[node]);
+	printf("Message:\n%s\n", p.msg);
         sendto(sockfd,&p,sizeof(p),0,(struct sockaddr *)&nodeaddr,sizeof(nodeaddr));
     }
     close(sockfd);
