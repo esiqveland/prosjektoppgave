@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     int i,n;
     int sockfd;
     
-    struct sockaddr_in servaddr, useraddr, cliaddr;
+    struct sockaddr_in load_dist_addr, my_addr, receiving_addr;
     socklen_t len;
     
     char mesg[MAXBUFLEN];
@@ -30,16 +30,22 @@ int main(int argc, char *argv[])
     
     sockfd=socket(AF_INET,SOCK_DGRAM,0);
 
-    //Client netinfo
-    bzero(&useraddr,sizeof(useraddr));
-    useraddr.sin_family = AF_INET;
+    //Receiving netinfo
+    bzero(&receiving_addr,sizeof(receiving_addr));
+    receiving_addr.sin_family = AF_INET;
+
+    //My netinfo
+    bzero(&my_addr,sizeof(my_addr));
+    my_addr.sin_family = AF_INET;
+    my_addr.sin_addr.s_addr = inet_addr("192.168.0.107");
+    my_addr.sin_port=htons(32001);;
     
-    bzero(&servaddr,sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr("192.168.0.102");
-    servaddr.sin_port=htons(32001);;
+    bzero(&load_dist_addr,sizeof(load_dist_addr));
+    load_dist_addr.sin_family = AF_INET;
+    load_dist_addr.sin_addr.s_addr = inet_addr("192.168.0.194");
+    load_dist_addr.sin_port=htons(32001);;
     
-    bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
+    bind(sockfd,(struct sockaddr *)&my_addr,sizeof(my_addr));
     
     printf("sending message...\n");
     typedef struct {
@@ -50,11 +56,11 @@ int main(int argc, char *argv[])
 
     payload p;
     
-    p.ip = servaddr.sin_addr.s_addr;
-    p.port = servaddr.sin_port;
+    p.ip = my_addr.sin_addr.s_addr;
+    p.port = my_addr.sin_port;
     strcpy(p.msg,"wash car technolog ");
     
-    sendto(sockfd,&p,sizeof(p),0,(struct sockaddr *)&servaddr,sizeof(servaddr));
+    sendto(sockfd,&p,sizeof(p),0,(struct sockaddr *)&load_dist_addr,sizeof(load_dist_addr));
 
     printf("-------------------------------------------------------\n");
     printf("sent query: %s\n",p.msg);
@@ -65,9 +71,9 @@ int main(int argc, char *argv[])
 
     char stringBuffer[1024];
 
-    len = sizeof(cliaddr);
+    len = sizeof(receiving_addr);
         
-    n = recvfrom(sockfd,stringBuffer,1024,0,(struct sockaddr *)&cliaddr,&len);  
+    n = recvfrom(sockfd,stringBuffer,1024,0,(struct sockaddr *)&receiving_addr,&len);  
 
     printf("Received: %s\n",stringBuffer);
 
