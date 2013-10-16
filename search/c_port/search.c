@@ -340,6 +340,14 @@ void doSearch(char* querystr, query** query_dict) {
 }
 
 void startLocalServer(){
+    char* configfile = "config.txt";
+    char configbuffer[16];
+
+    FILE* fconfig = fopen(configfile, "r");
+    fgets(configbuffer, 16, fconfig);
+
+    printf("Starting server on ip: %s\n", configbuffer);
+    
     int sockfd;
     ssize_t n;
     
@@ -350,7 +358,7 @@ void startLocalServer(){
     
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr("192.168.0.102");
+    servaddr.sin_addr.s_addr = inet_addr(configbuffer);
     servaddr.sin_port=htons(32001);
     
     bzero(&useraddr,sizeof(useraddr));
