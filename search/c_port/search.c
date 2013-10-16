@@ -180,15 +180,16 @@ void split_query_into_terms(query** query_dict, char* querystr) {
 void print_query_struct_str(query** query_dict, char* target) {
     query* entry;
     dictionary_entry* current_dict_entry;
+    int charcounter = 0;
     for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
         current_dict_entry = find_dict_entry(entry->term);
-        sprintf(target, "%s: %f\n\t", entry->term, entry->score);
+        charcounter += sprintf(target+charcounter, "%s: %f\n\t", entry->term, entry->score);
         postings_entry* postentry = current_dict_entry->posting;
         while(postentry) {
-            sprintf(target, "%d ", postentry->docId);
+            charcounter += sprintf(target+charcounter, "%d ", postentry->docId);
             postentry = postentry->next;
         }
-        sprintf(target, "\n\t");
+        charcounter += sprintf(target+charcounter, "\n\t");
     }
     
 }
@@ -347,7 +348,7 @@ void startLocalServer(){
     
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    servaddr.sin_addr.s_addr = inet_addr("192.168.0.102");
     servaddr.sin_port=htons(32001);
     
     bzero(&useraddr,sizeof(useraddr));
@@ -389,7 +390,7 @@ void startLocalServer(){
         query* query_dict = NULL;
         doSearch(p.msg, &query_dict);
         
-        char strbuffer[1024];
+        char* strbuffer = malloc(1024);
         
         long long after = wall_clock_time();
         long long el = after-before;
@@ -397,10 +398,13 @@ void startLocalServer(){
         printf("ELAPSED: %f s\n\n", mytime);
         printf("Done\n");
         printf("Sending answer...\n");
-
-        int sentbytes = sendto(sockfd, strbuffer, strlen(strbuffer), 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
         
+        print_query_struct_str(&query_dict, strbuffer);
+        printf("Sending string:\n%s\n", strbuffer);
+        int sentbytes = sendto(sockfd, strbuffer, strlen(strbuffer), 0, (struct sockaddr *)&useraddr, sizeof(useraddr));
         printf("Done!");
+        
+        free(strbuffer);
     }
     
     close(sockfd);
