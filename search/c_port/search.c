@@ -15,7 +15,6 @@
 #include <netdb.h>
 #include <time.h>
 
-
 #define DEFAULT_TERM_NUM 5
 #define DEBUG 1
 
@@ -178,12 +177,36 @@ void split_query_into_terms(query** query_dict, char* querystr) {
     //free(myquery);
 }
 
+void print_query_struct_str(query** query_dict, char* target) {
+    query* entry;
+    dictionary_entry* current_dict_entry;
+    for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
+        current_dict_entry = find_dict_entry(entry->term);
+        sprintf(target, "%s: %f\n\t", entry->term, entry->score);
+        postings_entry* postentry = current_dict_entry->posting;
+        while(postentry) {
+            sprintf(target, "%d ", postentry->docId);
+            postentry = postentry->next;
+        }
+        sprintf(target, "\n\t");
+    }
+    
+}
+
 void print_query_struct(query** query_dict) {
     query* entry;
     printf("query_dict:\n");
+    dictionary_entry* current_dict_entry;
     for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
-        printf("\t%s: %f\n", entry->term, entry->score);
+        current_dict_entry = find_dict_entry(entry->term);
+        printf("\n\t%s: %f\n\t", entry->term, entry->score);
+        postings_entry* postentry = current_dict_entry->posting;
+        while(postentry) {
+            printf("%d ", postentry->docId);
+            postentry = postentry->next;
+        }
     }
+    printf("\n\n");
 }
 
 void build_postingslist(char* token) {
@@ -296,19 +319,19 @@ void prefetch_tokens(query** query_dict) {
 
 }
 
-void doSearch(char* querystr) {
+void doSearch(char* querystr, query** query_dict) {
     
     if(DEBUG)
         printf("given query: %s\n", querystr);
-    query* query_dict = NULL;
     
-    split_query_into_terms(&query_dict, querystr);
+    split_query_into_terms(query_dict, querystr);
 
-    print_query_struct(&query_dict);
+    prefetch_tokens(query_dict);
 
-    prefetch_tokens(&query_dict);
+    score_query(query_dict);
 
-    score_query(&query_dict);
+    print_query_struct(query_dict);
+
 }
 
 void startLocalServer(){
@@ -362,15 +385,22 @@ void startLocalServer(){
         printf("-------------------------------------------------------\n");
         
         long long before = wall_clock_time();
-        doSearch(p.msg);
+
+        query* query_dict = NULL;
+        doSearch(p.msg, &query_dict);
+        
+        char strbuffer[1024];
+        
         long long after = wall_clock_time();
         long long el = after-before;
         float mytime = (float)el/1000000000.0;
         printf("ELAPSED: %f s\n\n", mytime);
-
-        
         printf("Done\n");
+        printf("Sending answer...\n");
+
+        int sentbytes = sendto(sockfd, strbuffer, strlen(strbuffer), 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
         
+        printf("Done!");
     }
     
     close(sockfd);
@@ -383,7 +413,8 @@ int main(int argc, char* argv[])
   
         long long before = wall_clock_time();
 
-        doSearch(argv[1]);
+        query* query_dict = NULL;
+        doSearch(argv[1], &query_dict);
         
         long long after = wall_clock_time();
         long long el = after-before;
