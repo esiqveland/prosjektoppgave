@@ -27,7 +27,7 @@ void setup(){
     //Load distributer netinfo
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr("192.168.0.194"); //TODO: Pull ip from network interface
+    servaddr.sin_addr.s_addr = inet_addr("192.168.0.200"); //TODO: Pull ip from network interface
     servaddr.sin_port=htons(32001);
     
     //Client netinfo
@@ -36,13 +36,12 @@ void setup(){
     
     //Worker node netinfo
     bzero(&nodeaddr,sizeof(nodeaddr));
-    nodeaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
     nodeaddr.sin_family = AF_INET;
     nodeaddr.sin_port=htons(32001);
     
     char * node_address[8];
     
-    node_address[0] = "192.168.0.102";
+    node_address[0] = "192.168.0.200";
    	node_address[1] = "192.168.0.201";
    	node_address[2] = "192.168.0.202";
    	node_address[3] = "192.168.0.203";
@@ -83,8 +82,9 @@ void setup(){
         // We have a request, send to a working node
         
         // Select node
-        int node = 0;
-        nodeaddr.sin_addr.s_addr = htonl(*node_address[node]);
+
+        int node = (rand() % 2) + 1;
+        nodeaddr.sin_addr.s_addr = inet_addr(node_address[node]);
         
         printf("Sending message to node number %d: %s\n",node, node_address[node]);
 	printf("Message:\n%s\n", p.msg);
