@@ -253,6 +253,10 @@ void build_postingslist(char* token) {
 
 }
 
+void delete_query_struct(query** query_dict) {
+    
+}
+
 void handle_token(char* token) {
     if(DEBUG) {
         printf("handle token: %s\n", token);
@@ -404,6 +408,7 @@ void startLocalServer(){
         int sentbytes = sendto(sockfd, strbuffer, strlen(strbuffer), 0, (struct sockaddr *)&useraddr, sizeof(useraddr));
         printf("Done!");
         
+        delete_query_struct(&query_dict);
         free(strbuffer);
     }
     
