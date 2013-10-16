@@ -82,8 +82,9 @@ void setup(){
         // We have a request, send to a working node
         
         // Select node
+
         int node = (rand() % 2) + 1;
-        nodeaddr.sin_addr.s_addr = htonl(node_address[node]);
+        nodeaddr.sin_addr.s_addr = inet_addr(node_address[node]);
         
         printf("Sending message to node number %d: %s\n",node, node_address[node]);
 	printf("Message:\n%s\n", p.msg);
