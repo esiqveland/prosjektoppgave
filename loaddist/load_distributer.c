@@ -27,7 +27,7 @@ void setup(){
     //Load distributer netinfo
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); //TODO: Pull ip from network interface
+    servaddr.sin_addr.s_addr = inet_addr("192.168.0.102"); //TODO: Pull ip from network interface
     servaddr.sin_port=htons(32001);
     
     //Client netinfo
