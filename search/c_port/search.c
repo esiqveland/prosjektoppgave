@@ -250,7 +250,14 @@ void build_postingslist(char* token) {
 }
 
 void delete_query_struct(query** query_dict) {
-    
+    query* entry, oldentry = NULL;
+    for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
+        free(entry->term);
+        if(oldentry !=NULL) {
+            free(oldentry);
+        }
+        oldentry = entry;
+    }
 }
 
 void handle_token(char* token) {
@@ -332,7 +339,6 @@ void doSearch(char* querystr, query** query_dict) {
     score_query(query_dict);
 
     print_query_struct(query_dict);
-
 }
 
 void startLocalServer(){
