@@ -252,7 +252,8 @@ void build_postingslist(char* token) {
 }
 
 void delete_query_struct(query** query_dict) {
-    query* entry, oldentry = NULL;
+    query* entry;
+    query* oldentry = NULL;
     for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
         free(entry->term);
         if(oldentry !=NULL) {
