@@ -154,13 +154,10 @@ void trim_string(char* querystr) {
 }
 
 void split_query_into_terms(query** query_dict, char* querystr) {
-    char* myquery = strdup(querystr);
-    char* savedpointer = myquery;
-
     char* reentrant_saver;
     
     char* token;
-    token = strtok_r(myquery, " \n\r\t", &reentrant_saver);
+    token = strtok_r(querystr, " \n\r\t", &reentrant_saver);
     
     while(token != NULL) {
         dictionary_entry* dict_entry = find_dict_entry(token);
@@ -172,7 +169,6 @@ void split_query_into_terms(query** query_dict, char* querystr) {
         }
         token = strtok_r(NULL, " \n\r\t", &reentrant_saver);
     }
-    free(savedpointer);
 }
 
 void print_query_struct_str(query** query_dict, char* target) {
@@ -407,7 +403,9 @@ void startLocalServer(){
         long long before = wall_clock_time();
 
         query* query_dict = NULL;
-        doSearch(p.msg, &query_dict);
+        char* querystr = strdup(p.msg);
+        doSearch(querystr, &query_dict);
+        free(querystr);
         
         
         long long after = wall_clock_time();
