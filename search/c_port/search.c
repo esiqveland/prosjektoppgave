@@ -18,10 +18,6 @@
 #define DEFAULT_TERM_NUM 5
 #define DEBUG 1
 
-#define SERVERIP "192.168.0.100"
-#define MYPORT "4950"    // the port users will be connecting to
-#define SERVERPORT "4951"
-
 #define MAXBUFLEN 128
 
 typedef struct postings_entry postings_entry;
@@ -351,20 +347,20 @@ void startLocalServer(){
     int sockfd;
     ssize_t n;
     
-    struct sockaddr_in servaddr, cliaddr, useraddr;
+    struct sockaddr_in my_addr, load_dist_addr, useraddr;
     socklen_t len;
     
     sockfd=socket(AF_INET,SOCK_DGRAM,0);
     
-    bzero(&servaddr,sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr(configbuffer);
-    servaddr.sin_port=htons(32001);
+    bzero(&my_addr,sizeof(my_addr));
+    my_addr.sin_family = AF_INET;
+    my_addr.sin_addr.s_addr = inet_addr(configbuffer);
+    my_addr.sin_port=htons(32003);
     
     bzero(&useraddr,sizeof(useraddr));
     useraddr.sin_family = AF_INET;
     
-    bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
+    bind(sockfd,(struct sockaddr *)&my_addr,sizeof(my_addr));
     
     printf("starting server...\n");
     
@@ -380,12 +376,13 @@ void startLocalServer(){
     {
         printf("Ready for query...\n");
         bzero(&p,sizeof(p));
-        len = sizeof(cliaddr);
+        len = sizeof(load_dist_addr);
         
-        n = recvfrom(sockfd,&p,sizeof(p),0,(struct sockaddr *)&cliaddr,&len);
+        n = recvfrom(sockfd,&p,sizeof(p),0,(struct sockaddr *)&load_dist_addr,&len);
         
         useraddr.sin_addr.s_addr = p.ip;
-        useraddr.sin_port = p.port;
+        useraddr.sin_port = htons(32000);
+        //useraddr.sin_port = p.port;
         
         printf("port: %hu, ip: %s\n",ntohs(p.port),inet_ntoa(useraddr.sin_addr));
         printf("query: %s\n",p.msg);

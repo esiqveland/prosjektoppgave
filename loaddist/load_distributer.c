@@ -27,8 +27,8 @@ void setup(){
     //Load distributer netinfo
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr("192.168.0.200"); //TODO: Pull ip from network interface
-    servaddr.sin_port=htons(32001);
+    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); //TODO: Pull ip from network interface
+    servaddr.sin_port=htons(32002);
     
     //Client netinfo
     bzero(&useraddr,sizeof(useraddr));
@@ -37,11 +37,11 @@ void setup(){
     //Worker node netinfo
     bzero(&nodeaddr,sizeof(nodeaddr));
     nodeaddr.sin_family = AF_INET;
-    nodeaddr.sin_port=htons(32001);
+    nodeaddr.sin_port=htons(32003);
     
     char * node_address[8];
     
-    node_address[0] = "192.168.0.200";
+    node_address[0] = "127.0.0.1";
    	node_address[1] = "192.168.0.201";
    	node_address[2] = "192.168.0.202";
    	node_address[3] = "192.168.0.203";
@@ -54,6 +54,8 @@ void setup(){
     
     printf("starting server...\n");
     
+    char temp_buff[1024];
+
     typedef struct {
         __uint32_t ip;
         __uint16_t port;
@@ -63,6 +65,8 @@ void setup(){
     payload p;
 
     srand(time(NULL));
+
+
     
     for(;;)
     {
@@ -70,11 +74,27 @@ void setup(){
         bzero(&p,sizeof(p));
         len = sizeof(useraddr);
         
-        n = recvfrom(sockfd,&p,sizeof(p),0,(struct sockaddr *)&useraddr,&len);
+        bzero(&temp_buff,(sizeof(temp_buff)));
+
+        // int k;
+        // unsigned int m = sizeof(k);
         
-        useraddr.sin_addr.s_addr = p.ip;
-        useraddr.sin_port = p.port;
+        // getsockopt(sockfd,SOL_SOCKET,SO_RCVBUF,(void *)&k, &m);
+        // // now the variable n will have the socket size
+        // printf("%d\n",k);
+        // printf("%d\n",m);
+
+
+
+        n = recvfrom(sockfd,&temp_buff,sizeof(temp_buff),0,(struct sockaddr *)&useraddr,&len);
         
+        //useraddr.sin_addr.s_addr = p.ip;
+        //useraddr.sin_port = p.port;
+
+        p.ip = useraddr.sin_addr.s_addr;
+        p.port = useraddr.sin_port;
+        strcpy(p.msg, temp_buff);
+
         printf("received from user on port: %hu, ip: %s\n",ntohs(p.port),inet_ntoa(useraddr.sin_addr));
         printf("query: %s\n",p.msg);
         
@@ -83,8 +103,8 @@ void setup(){
         
         // Select node
 
-        int node = (rand() % 2) + 1;
-        nodeaddr.sin_addr.s_addr = inet_addr(node_address[node]);
+        int node = 0;
+        nodeaddr.sin_addr.s_addr = inet_addr(node_address[0]);
         
         printf("Sending message to node number %d: %s\n",node, node_address[node]);
 	printf("Message:\n%s\n", p.msg);
