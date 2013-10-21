@@ -98,6 +98,7 @@ void build_dictionary(const char* input_file_dict) {
         hash_dict_entry(dict_entry);
     }
     fclose(f);
+    free(buffer);
 }
 
 void print_dictionary() {
@@ -154,6 +155,7 @@ void trim_string(char* querystr) {
 
 void split_query_into_terms(query** query_dict, char* querystr) {
     char* myquery = strdup(querystr);
+    char* savedpointer = myquery;
 
     char* reentrant_saver;
     
@@ -170,7 +172,7 @@ void split_query_into_terms(query** query_dict, char* querystr) {
         }
         token = strtok_r(NULL, " \n\r\t", &reentrant_saver);
     }
-    //free(myquery);
+    free(savedpointer);
 }
 
 void print_query_struct_str(query** query_dict, char* target) {
@@ -377,6 +379,7 @@ void startLocalServer(){
     } payload;
     
     payload p;
+    char* strbuffer = malloc(1024);
     
     for(;;)
     {
@@ -405,7 +408,6 @@ void startLocalServer(){
         query* query_dict = NULL;
         doSearch(p.msg, &query_dict);
         
-        char* strbuffer = malloc(1024);
         
         long long after = wall_clock_time();
         long long el = after-before;
@@ -420,9 +422,9 @@ void startLocalServer(){
         printf("Done!");
         
         delete_query_struct(&query_dict);
-        free(strbuffer);
     }
     
+    free(strbuffer);
     close(sockfd);
 }
 
