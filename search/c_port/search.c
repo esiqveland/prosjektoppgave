@@ -407,21 +407,21 @@ void startLocalServer(){
         doSearch(querystr, &query_dict);
 
 
-        long long after = wall_clock_time();
-        long long el = after-before;
-        float mytime = (float)el/1000000000.0;
-        printf("ELAPSED: %f s\n\n", mytime);
         printf("Done\n");
         printf("Sending answer...\n");
 
         print_query_struct_str(&query_dict, strbuffer);
-        printf("Sending string:\n%s\n", strbuffer);
-        int sentbytes = sendto(sockfd, strbuffer, strlen(strbuffer), 0, (struct sockaddr *)&useraddr, sizeof(useraddr));
-        printf("Done!");
-
         delete_query_struct(&query_dict);
         free(querystr);
 
+        long long after = wall_clock_time();
+        long long el = after-before;
+        float mytime = (float)el/1000000000.0;
+        printf("ELAPSED: %f s\n\n", mytime);
+
+        printf("Sending string:\n%s\n", strbuffer);
+        int sentbytes = sendto(sockfd, strbuffer, strlen(strbuffer), 0, (struct sockaddr *)&useraddr, sizeof(useraddr));
+        printf("Done!");
     }
 
     free(strbuffer);
