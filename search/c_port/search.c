@@ -135,7 +135,7 @@ void add_term_to_query(query** query_dict, char* term, dictionary_entry* dict_en
     HASH_FIND(hh, *query_dict, term, strlen(term), myq);
     if(!myq) {
         init_alloc_query(&myq);
-        myq->term = term;
+        myq->term = strdup(term);
         myq->score = 1.0f;
         myq->dict_entry = dict_entry;
         hash_query_entry(query_dict, myq);
