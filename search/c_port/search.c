@@ -335,7 +335,7 @@ void doSearch(char* querystr, query** query_dict) {
 
     prefetch_tokens(query_dict);
 
-    score_query(query_dict);
+    //score_query(query_dict);
 
     //print_query_struct(query_dict);
 }
