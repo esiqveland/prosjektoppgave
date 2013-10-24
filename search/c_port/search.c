@@ -36,7 +36,7 @@ typedef struct {
 typedef struct {
     char* term;
     float score;
-    UT_hash_handle hhq;
+    UT_hash_handle hh;
     dictionary_entry* dict_entry;
 } query;
 
@@ -123,7 +123,7 @@ void print_dictionary() {
 }
 
 void hash_query_entry(query** query_dict, query* myq) {
-    HASH_ADD_KEYPTR(hhq, *query_dict, myq->term, strlen(myq->term), myq);
+    HASH_ADD_KEYPTR(hh, *query_dict, myq->term, strlen(myq->term), myq);
     if(DEBUG)
         printf("hashed q entry: key:%s leng:%f\n", myq->term, myq->score);
 }
@@ -132,7 +132,7 @@ void add_term_to_query(query** query_dict, char* term, dictionary_entry* dict_en
     // if term in query already, increase score:
     query* myq = NULL;
 
-    HASH_FIND(hhq, *query_dict, term, strlen(term), myq);
+    HASH_FIND(hh, *query_dict, term, strlen(term), myq);
     if(!myq) {
         init_alloc_query(&myq);
         myq->term = strdup(term);
@@ -175,7 +175,7 @@ void print_query_struct_str(query** query_dict, char* target) {
     query* entry;
     dictionary_entry* current_dict_entry;
     int charcounter = 0;
-    for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
+    for(entry=*query_dict; entry != NULL; entry=entry->hh.next) {
         current_dict_entry = find_dict_entry(entry->term);
         charcounter += sprintf(target+charcounter, "%s: %f\n\t", entry->term, entry->score);
         postings_entry* postentry = current_dict_entry->posting;
@@ -192,7 +192,7 @@ void print_query_struct(query** query_dict) {
     query* entry;
     printf("query_dict:\n");
     dictionary_entry* current_dict_entry;
-    for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
+    for(entry=*query_dict; entry != NULL; entry=entry->hh.next) {
         current_dict_entry = find_dict_entry(entry->term);
         printf("\n\t%s: %f\n\t", entry->term, entry->score);
         postings_entry* postentry = current_dict_entry->posting;
@@ -250,8 +250,9 @@ void build_postingslist(char* token) {
 void delete_query_struct(query** query_dict) {
     query* entry;
     query* oldentry = NULL;
-    for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
-        free(entry->term);
+    for(entry=*query_dict; entry != NULL; entry=entry->hh.next) {
+        HASH_DEL(*query_dict, entry);
+        //free(entry->term);
         if(oldentry !=NULL) {
             free(oldentry);
         }
@@ -296,7 +297,7 @@ void score_query(query** query_dict) {
     doc_score* doc_scores = NULL;
 
     query* entry;
-    for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
+    for(entry=*query_dict; entry != NULL; entry=entry->hh.next) {
 
         dictionary_entry* dict_entry = find_dict_entry(entry->term);
         if(!dict_entry) {
@@ -320,7 +321,7 @@ void score_query(query** query_dict) {
 void prefetch_tokens(query** query_dict) {
     query* entry;
 
-    for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
+    for(entry=*query_dict; entry != NULL; entry=entry->hh.next) {
         handle_token(entry->term);
     }
 
@@ -436,6 +437,7 @@ int main(int argc, char* argv[])
 
         query* query_dict = NULL;
         doSearch(argv[1], &query_dict);
+        delete_query_struct(&query_dict);
 
         long long after = wall_clock_time();
         long long el = after-before;
