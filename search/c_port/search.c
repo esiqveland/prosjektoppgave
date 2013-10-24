@@ -135,7 +135,7 @@ void add_term_to_query(query** query_dict, char* term, dictionary_entry* dict_en
     HASH_FIND(hh, *query_dict, term, strlen(term), myq);
     if(!myq) {
         init_alloc_query(&myq);
-        myq->term = strdup(term);
+        myq->term = term;
         myq->score = 1.0f;
         myq->dict_entry = dict_entry;
         hash_query_entry(query_dict, myq);
@@ -165,7 +165,8 @@ void split_query_into_terms(query** query_dict, char* querystr) {
         if(dict_entry != NULL) {
             if(DEBUG)
                 printf("found token in dictionary: %s\n", token);
-            add_term_to_query(query_dict, token, dict_entry);
+            char* copy = strdup(token);
+            add_term_to_query(query_dict, copy, dict_entry);
         }
         token = strtok_r(NULL, " \n\r\t", &reentrant_saver);
     }
@@ -248,15 +249,12 @@ void build_postingslist(char* token) {
 }
 
 void delete_query_struct(query** query_dict) {
-    query* entry;
-    query* oldentry = NULL;
-    for(entry=*query_dict; entry != NULL; entry=entry->hh.next) {
+    query* entry = NULL;
+    query* tmp = NULL;
+    HASH_ITER(hh, *query_dict, entry, tmp) {
         HASH_DEL(*query_dict, entry);
-        //free(entry->term);
-        if(oldentry !=NULL) {
-            free(oldentry);
-        }
-        oldentry = entry;
+        free(entry->term);
+        free(entry);
     }
 }
 
@@ -266,6 +264,7 @@ void handle_token(char* token) {
     }
     char* copy = strdup(token);
     build_postingslist(copy);
+    free(copy);
 }
 
 void add_doc_score(doc_score** doc_scores, doc_score* doc_score_to_add) {
