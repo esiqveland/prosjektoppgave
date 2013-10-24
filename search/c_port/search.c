@@ -103,7 +103,7 @@ void build_dictionary(const char* input_file_dict) {
 
 void print_dictionary() {
     dictionary_entry *dict_entry;
-    
+
     for(dict_entry=dictionary; dict_entry != NULL; dict_entry=dict_entry->hhd.next) {
         if(dict_entry->posting == NULL) {
             continue;
@@ -135,7 +135,7 @@ void add_term_to_query(query** query_dict, char* term, dictionary_entry* dict_en
     HASH_FIND(hhq, *query_dict, term, strlen(term), myq);
     if(!myq) {
         init_alloc_query(&myq);
-        myq->term = term;
+        myq->term = strdup(term);
         myq->score = 1.0f;
         myq->dict_entry = dict_entry;
         hash_query_entry(query_dict, myq);
@@ -148,20 +148,20 @@ void trim_string(char* querystr) {
     // Trim trailing space
     char* end = querystr + strlen(querystr) - 1;
     while(end > querystr && isspace(*end)) end--;
-    
+
     // Write new null terminator
     *(end+1) = 0;
 }
 
 void split_query_into_terms(query** query_dict, char* querystr) {
     char* reentrant_saver;
-    
+
     char* token;
     token = strtok_r(querystr, " \n\r\t", &reentrant_saver);
-    
+
     while(token != NULL) {
         dictionary_entry* dict_entry = find_dict_entry(token);
-        
+
         if(dict_entry != NULL) {
             if(DEBUG)
                 printf("found token in dictionary: %s\n", token);
@@ -185,7 +185,7 @@ void print_query_struct_str(query** query_dict, char* target) {
         }
         charcounter += sprintf(target+charcounter, "\n\t");
     }
-    
+
 }
 
 void print_query_struct(query** query_dict) {
@@ -217,15 +217,15 @@ void build_postingslist(char* token) {
     if(dict_entry->occurences == 0) {
         return;
     }
-    
+
     FILE* f_postings = fopen(postings_file, "rb");
     fseek(f_postings, dict_entry->byte_offset, SEEK_SET); //SEEK_SET is offset from beginning of file
-    
+
     postings_entry* postentry;
     init_alloc_postings_entry(&postentry);
     dict_entry->posting = postentry;
     postings_entry* prev;
-    
+
     if(DEBUG)
         printf("build postlist for token: %s, times: %"SCNu32"\n", token, dict_entry->occurences);
 
@@ -233,7 +233,7 @@ void build_postingslist(char* token) {
     for(i = 0; i < dict_entry->occurences; i++) {
         fread(&(postentry->docId), 8, 1, f_postings);
         //fread(&(postentry->term_frequency), 4, 1, f_postings);
-        
+
         prev = postentry;
         postings_entry* tmp;
         init_alloc_postings_entry(&tmp);
@@ -297,13 +297,13 @@ void score_query(query** query_dict) {
 
     query* entry;
     for(entry=*query_dict; entry != NULL; entry=entry->hhq.next) {
-        
+
         dictionary_entry* dict_entry = find_dict_entry(entry->term);
         if(!dict_entry) {
             printf("could not find dict_entry for: %s\n", entry->term);
         }
         postings_entry* posting = dict_entry->posting;
- 
+
         int j;
         for(j = 0; j < dict_entry->occurences; j++) {
             doc_score* score = lookup_doc_score(&doc_scores, posting->docId);
@@ -327,10 +327,10 @@ void prefetch_tokens(query** query_dict) {
 }
 
 void doSearch(char* querystr, query** query_dict) {
-    
+
     if(DEBUG)
         printf("given query: %s\n", querystr);
-    
+
     split_query_into_terms(query_dict, querystr);
 
     prefetch_tokens(query_dict);
@@ -348,81 +348,81 @@ void startLocalServer(){
     fgets(configbuffer, 16, fconfig);
 
     printf("Starting server on ip: %s\n", configbuffer);
-    
+
     int sockfd;
     ssize_t n;
-    
+
     struct sockaddr_in my_addr, load_dist_addr, useraddr;
     socklen_t len;
-    
+
     sockfd=socket(AF_INET,SOCK_DGRAM,0);
-    
+
     bzero(&my_addr,sizeof(my_addr));
     my_addr.sin_family = AF_INET;
     my_addr.sin_addr.s_addr = inet_addr(configbuffer);
     my_addr.sin_port=htons(32003);
-    
+
     bzero(&useraddr,sizeof(useraddr));
     useraddr.sin_family = AF_INET;
-    
+
     bind(sockfd,(struct sockaddr *)&my_addr,sizeof(my_addr));
-    
+
     printf("starting server...\n");
-    
+
     typedef struct {
         __uint32_t ip;
         __uint16_t port;
         char msg[MAXBUFLEN];
     } payload;
-    
+
     payload p;
     char* strbuffer = malloc(1024);
-    
+
     for(;;)
     {
         printf("Ready for query...\n");
         bzero(&p,sizeof(p));
         len = sizeof(load_dist_addr);
-        
+
         n = recvfrom(sockfd,&p,sizeof(p),0,(struct sockaddr *)&load_dist_addr,&len);
-        
+
         useraddr.sin_addr.s_addr = p.ip;
         useraddr.sin_port = htons(32000);
         //useraddr.sin_port = p.port;
-        
+
         printf("port: %hu, ip: %s\n",ntohs(p.port),inet_ntoa(useraddr.sin_addr));
         printf("query: %s\n",p.msg);
-        
-        
+
+
         //We have a query, do the search
-        
+
         printf("-------------------------------------------------------\n");
         printf("executing query: %s\n",p.msg);
         printf("-------------------------------------------------------\n");
-        
+
         long long before = wall_clock_time();
 
         query* query_dict = NULL;
         char* querystr = strdup(p.msg);
         doSearch(querystr, &query_dict);
         free(querystr);
-        
-        
+
+
         long long after = wall_clock_time();
         long long el = after-before;
         float mytime = (float)el/1000000000.0;
         printf("ELAPSED: %f s\n\n", mytime);
         printf("Done\n");
         printf("Sending answer...\n");
-        
+
         print_query_struct_str(&query_dict, strbuffer);
         printf("Sending string:\n%s\n", strbuffer);
         int sentbytes = sendto(sockfd, strbuffer, strlen(strbuffer), 0, (struct sockaddr *)&useraddr, sizeof(useraddr));
         printf("Done!");
-        
+
         delete_query_struct(&query_dict);
     }
-    
+
     free(strbuffer);
     close(sockfd);
 }
@@ -431,16 +431,16 @@ int main(int argc, char* argv[])
 {
     build_dictionary("target/dictionary.txt");
     if(argc > 1) {
-  
+
         long long before = wall_clock_time();
 
         query* query_dict = NULL;
         doSearch(argv[1], &query_dict);
-        
+
         long long after = wall_clock_time();
         long long el = after-before;
         float mytime = (float)el/1000000000.0;
-        
+
         printf("ELAPSED: %f s\n\n", mytime);
     } else {
         startLocalServer();
