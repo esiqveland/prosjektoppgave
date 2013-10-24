@@ -337,7 +337,7 @@ void doSearch(char* querystr, query** query_dict) {
 
     score_query(query_dict);
 
-    print_query_struct(query_dict);
+    //print_query_struct(query_dict);
 }
 
 void startLocalServer(){
@@ -405,7 +405,6 @@ void startLocalServer(){
         query* query_dict = NULL;
         char* querystr = strdup(p.msg);
         doSearch(querystr, &query_dict);
-        free(querystr);
 
 
         long long after = wall_clock_time();
@@ -421,6 +420,8 @@ void startLocalServer(){
         printf("Done!");
 
         delete_query_struct(&query_dict);
+        free(querystr);
+
     }
 
     free(strbuffer);
@@ -439,6 +440,7 @@ int main(int argc, char* argv[])
         query* query_dict = NULL;
 
         doSearch(searchstr, &query_dict);
+        print_query_struct(&query_dict);
         delete_query_struct(&query_dict);
 
         free(searchstr);
