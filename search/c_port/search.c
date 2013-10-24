@@ -433,11 +433,16 @@ int main(int argc, char* argv[])
     build_dictionary("target/dictionary.txt");
     if(argc > 1) {
 
+        char* searchstr = strdup(argv[1]);
+
         long long before = wall_clock_time();
 
         query* query_dict = NULL;
-        doSearch(argv[1], &query_dict);
+
+        doSearch(searchstr, &query_dict);
         delete_query_struct(&query_dict);
+
+        free(searchstr);
 
         long long after = wall_clock_time();
         long long el = after-before;
