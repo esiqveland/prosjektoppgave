@@ -27,7 +27,7 @@ void setup(){
     //Load distributer netinfo
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); //TODO: Pull ip from network interface
+    servaddr.sin_addr.s_addr = inet_addr("192.168.0.101"); //TODO: Pull ip from network interface
     servaddr.sin_port=htons(32002);
     
     //Client netinfo
@@ -41,7 +41,7 @@ void setup(){
     
     char * node_address[8];
     
-    node_address[0] = "127.0.0.1";
+    node_address[0] = "192.168.0.200";
    	node_address[1] = "192.168.0.201";
    	node_address[2] = "192.168.0.202";
    	node_address[3] = "192.168.0.203";

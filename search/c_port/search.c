@@ -378,9 +378,10 @@ void startLocalServer(){
     payload p;
     char* strbuffer = malloc(1024);
 
+    printf("Ready for query...\n");
     for(;;)
     {
-        printf("Ready for query...\n");
+
         bzero(&p,sizeof(p));
         len = sizeof(load_dist_addr);
 
@@ -390,15 +391,15 @@ void startLocalServer(){
         useraddr.sin_port = htons(32000);
         //useraddr.sin_port = p.port;
 
-        printf("port: %hu, ip: %s\n",ntohs(p.port),inet_ntoa(useraddr.sin_addr));
-        printf("query: %s\n",p.msg);
+        // printf("port: %hu, ip: %s\n",ntohs(p.port),inet_ntoa(useraddr.sin_addr));
+        // printf("query: %s\n",p.msg);
 
 
         //We have a query, do the search
 
-        printf("-------------------------------------------------------\n");
-        printf("executing query: %s\n",p.msg);
-        printf("-------------------------------------------------------\n");
+        // printf("-------------------------------------------------------\n");
+        // printf("executing query: %s\n",p.msg);
+        // printf("-------------------------------------------------------\n");
 
         long long before = wall_clock_time();
 
@@ -407,21 +408,21 @@ void startLocalServer(){
         doSearch(querystr, &query_dict);
 
 
-        printf("Done\n");
-        printf("Sending answer...\n");
+        // printf("Done\n");
+        // printf("Sending answer...\n");
 
         print_query_struct_str(&query_dict, strbuffer);
         delete_query_struct(&query_dict);
         free(querystr);
 
-        long long after = wall_clock_time();
-        long long el = after-before;
-        float mytime = (float)el/1000000000.0;
-        printf("ELAPSED: %f s\n\n", mytime);
+        // long long after = wall_clock_time();
+        // long long el = after-before;
+        // float mytime = (float)el/1000000000.0;
+        // printf("ELAPSED: %f s\n\n", mytime);
 
-        printf("Sending string:\n%s\n", strbuffer);
+        // printf("Sending string:\n%s\n", strbuffer);
         int sentbytes = sendto(sockfd, strbuffer, strlen(strbuffer), 0, (struct sockaddr *)&useraddr, sizeof(useraddr));
-        printf("Done!");
+        // printf("Done!");
     }
 
     free(strbuffer);
