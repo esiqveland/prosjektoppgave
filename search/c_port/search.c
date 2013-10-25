@@ -43,7 +43,7 @@ typedef struct {
 
 typedef struct {
     int docid;
-    float* scores; /* score for every term in the query for this doc */
+    float score;
     UT_hash_handle hh;
 } doc_score;
 
@@ -213,9 +213,10 @@ void build_postingslist(char* token) {
     }
 
     // return if we have already read the postingslist for this term
-    if(dict_entry->posting != NULL) {
+    if(dict_entry->posting) {
         return;
     }
+    // if there is no postings list to be read, return
     if(dict_entry->occurences == 0) {
         return;
     }
@@ -274,46 +275,85 @@ void add_doc_score(doc_score** doc_scores, doc_score* doc_score_to_add) {
 
 void alloc_init_doc_score(doc_score** score, int query_terms) {
     *score = malloc(sizeof(doc_score));
-    (*score)->scores = malloc(sizeof(float)*query_terms);
-    int i;
-    for(i = 0; i < query_terms; i++) {
-        (*score)->scores[i] = 0.0f;
-    }
 }
 
 doc_score* lookup_doc_score(doc_score** doc_score_hash, int docid) {
-    doc_score* score;
+    doc_score* score = NULL;
     HASH_FIND_INT(*doc_score_hash, &docid, score);
     return score;
 }
 
 void destroy_doc_score(doc_score* score) {
-    if(score->scores != NULL)
-        free(score->scores);
-    score->scores = NULL;
+    free(score);
+}
+
+int doc_score_sort(void* a, void* b) {
+    doc_score* score_a = (doc_score*)a;
+    doc_score* score_b = (doc_score*)b;
+    if(score_a->score < score_b->score) {
+        return 1;
+    }
+    if(score_a->score > score_b->score) {
+        return -1;
+    }
+    return 0;
+}
+void print_doc_scoring(doc_score** doc_scores) {
+    doc_score* element = NULL;
+    doc_score* tmp = NULL;
+    printf("Document scores:\n");
+    HASH_ITER(hh, *doc_scores, element, tmp) {
+        printf("\t%d: %f\n", element->docid, element->score);
+    }
 }
 
 void score_query(query** query_dict) {
     doc_score* doc_scores = NULL;
 
     query* entry;
+    float squared_sum_of_weights = 0.0f;
     for(entry=*query_dict; entry != NULL; entry=entry->hh.next) {
 
         dictionary_entry* dict_entry = entry->dict_entry;
         postings_entry* posting = dict_entry->posting;
 
+        float idf_term = N/(dict_entry->occurences+1);
+        idf_term = logf(idf_term);
+        
         int j;
         for(j = 0; j < dict_entry->occurences; j++) {
             doc_score* score = lookup_doc_score(&doc_scores, posting->docId);
+            float weight = 1.0f+logf(posting->term_frequency);
+            weight = weight*idf_term;
+            squared_sum_of_weights+=weight*weight;
             if(!score) {
                 alloc_init_doc_score(&score, 1);
                 score->docid = posting->docId;
+                score->score = weight;
                 add_doc_score(&doc_scores, score);
             } else {
-                score->scores[0] += 1.0f;
+                score->score += weight;
             }
+            posting = posting->next;
         }
-
+    }
+    squared_sum_of_weights = sqrtf(squared_sum_of_weights);
+    
+    doc_score* element = NULL;
+    doc_score* tmp = NULL;
+    HASH_ITER(hh, doc_scores, element, tmp) {
+        element->score = element->score/squared_sum_of_weights;
+    }
+    
+    HASH_SORT(doc_scores, doc_score_sort);
+    if(DEBUG) {
+        print_doc_scoring(&doc_scores);
+    }
+    element = NULL;
+    tmp = NULL;
+    HASH_ITER(hh, doc_scores, element, tmp) {
+        HASH_DEL(doc_scores, element);
+        destroy_doc_score(element);
     }
 }
 
@@ -336,8 +376,6 @@ void doSearch(char* querystr, query** query_dict) {
     prefetch_tokens(query_dict);
 
     score_query(query_dict);
-
-    //print_query_struct(query_dict);
 }
 
 void startLocalServer(){
