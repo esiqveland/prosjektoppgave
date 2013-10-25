@@ -22,6 +22,7 @@
 
 typedef struct postings_entry postings_entry;
 long long wall_clock_time();
+static int N= 0;
 
 typedef struct {
     char* word;
@@ -298,10 +299,7 @@ void score_query(query** query_dict) {
     query* entry;
     for(entry=*query_dict; entry != NULL; entry=entry->hh.next) {
 
-        dictionary_entry* dict_entry = find_dict_entry(entry->term);
-        if(!dict_entry) {
-            printf("could not find dict_entry for: %s\n", entry->term);
-        }
+        dictionary_entry* dict_entry = entry->dict_entry;
         postings_entry* posting = dict_entry->posting;
 
         int j;
@@ -311,6 +309,8 @@ void score_query(query** query_dict) {
                 alloc_init_doc_score(&score, 1);
                 score->docid = posting->docId;
                 add_doc_score(&doc_scores, score);
+            } else {
+                score->scores[0] += 1.0f;
             }
         }
 
@@ -335,7 +335,7 @@ void doSearch(char* querystr, query** query_dict) {
 
     prefetch_tokens(query_dict);
 
-    //score_query(query_dict);
+    score_query(query_dict);
 
     //print_query_struct(query_dict);
 }
@@ -431,6 +431,8 @@ void startLocalServer(){
 int main(int argc, char* argv[])
 {
     build_dictionary("target/dictionary.txt");
+    N = find_dict_entry("*")->occurences;
+    printf("Docs in collection: %d\n", N);
     if(argc > 1) {
 
         char* searchstr = strdup(argv[1]);
