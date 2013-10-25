@@ -37,13 +37,13 @@ int main(int argc, char *argv[])
     //My netinfo
     bzero(&my_addr,sizeof(my_addr));
     my_addr.sin_family = AF_INET;
-    my_addr.sin_addr.s_addr = inet_addr("192.168.0.107");
-    my_addr.sin_port=htons(32001);;
+    my_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    my_addr.sin_port=htons(32005);;
     
     bzero(&load_dist_addr,sizeof(load_dist_addr));
     load_dist_addr.sin_family = AF_INET;
-    load_dist_addr.sin_addr.s_addr = inet_addr("192.168.0.194");
-    load_dist_addr.sin_port=htons(32001);;
+    load_dist_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    load_dist_addr.sin_port=htons(32000);;
     
     bind(sockfd,(struct sockaddr *)&my_addr,sizeof(my_addr));
     

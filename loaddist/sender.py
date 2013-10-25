@@ -122,7 +122,7 @@ class Connection:
 				message_received = self.socket.recv(connection_buffer_size)
 				counter += 1
 			except timeout:
-				print "timeout: counter = " + str(counter) 
+				print "done: Received " + str(counter) + " answers for " + str(messages_to_send) + " queries." 
 				break
 
 
@@ -149,17 +149,18 @@ class connectionThread (threading.Thread):
 
 
 # --- CONFIG --- #
-messages_to_send = 1000
-sleep_time_between_sends = 0.0003
+messages_to_send = 100000
+# sleep_time_between_sends = 0.0003 # MAC
+sleep_time_between_sends = 0.01 # PI
 number_of_sending_threads = 1
 sending_thread_list = []
 connection_buffer_size = 1024
 
 my_rec_port = 32000
-my_ip = "127.0.0.1"
+my_ip = "192.168.0.101"
 rec_timeout = 15
 load_dir_port = 32002
-load_dir_ip = "127.0.0.1"
+load_dir_ip = "192.168.0.101"
 
 # --- END OF CONFIG --- #
 
