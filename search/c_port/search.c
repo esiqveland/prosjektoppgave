@@ -298,6 +298,7 @@ int doc_score_sort(void* a, void* b) {
     }
     return 0;
 }
+
 void print_doc_scoring(doc_score** doc_scores) {
     doc_score* element = NULL;
     doc_score* tmp = NULL;
@@ -367,16 +368,21 @@ void prefetch_tokens(query** query_dict) {
 
 }
 
-void doSearch(char* querystr, query** query_dict) {
-
+void doSearch(char* querystr, char* result_target) {
+    query* query_dict = NULL;
+    
     if(DEBUG)
         printf("given query: %s\n", querystr);
 
-    split_query_into_terms(query_dict, querystr);
+    split_query_into_terms(&query_dict, querystr);
 
-    prefetch_tokens(query_dict);
+    prefetch_tokens(&query_dict);
 
-    score_query(query_dict);
+    score_query(&query_dict);
+
+    print_query_struct_str(&query_dict, result_target);
+    delete_query_struct(&query_dict);
+
 }
 
 void startLocalServer(){
@@ -442,16 +448,13 @@ void startLocalServer(){
 
         long long before = wall_clock_time();
 
-        query* query_dict = NULL;
         char* querystr = strdup(p.msg);
-        doSearch(querystr, &query_dict);
+        doSearch(querystr, strbuffer);
 
 
         // printf("Done\n");
         // printf("Sending answer...\n");
 
-        print_query_struct_str(&query_dict, strbuffer);
-        delete_query_struct(&query_dict);
         free(querystr);
 
         // long long after = wall_clock_time();
@@ -476,14 +479,12 @@ int main(int argc, char* argv[])
     if(argc > 1) {
 
         char* searchstr = strdup(argv[1]);
+        char* result = malloc(1024);
 
         long long before = wall_clock_time();
 
-        query* query_dict = NULL;
 
-        doSearch(searchstr, &query_dict);
-        print_query_struct(&query_dict);
-        delete_query_struct(&query_dict);
+        doSearch(searchstr, result);
 
         free(searchstr);
 
@@ -492,6 +493,7 @@ int main(int argc, char* argv[])
         float mytime = (float)el/1000000000.0;
 
         printf("ELAPSED: %f s\n\n", mytime);
+        free(result);
     } else {
         startLocalServer();
     }
