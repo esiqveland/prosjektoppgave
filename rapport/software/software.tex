@@ -14,6 +14,9 @@ The purpose of the load generator is to generate psudo-random queries and send t
 
 
 \subsection{Original python version}
-\subsection{C-port}
 
+\subsection{Optimized C-port}
+In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds. We therefore decided to rewrite the program using C. This also proved useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
+\subsubsection{Problems}
+The first testings of the
 
