@@ -338,11 +338,12 @@ void score_query(query** query_dict) {
         }
     }
     squared_sum_of_weights = sqrtf(squared_sum_of_weights);
+    squared_sum_of_weights = 1/squared_sum_of_weights;
     
     doc_score* element = NULL;
     doc_score* tmp = NULL;
     HASH_ITER(hh, doc_scores, element, tmp) {
-        element->score = element->score/squared_sum_of_weights;
+        element->score = element->score*squared_sum_of_weights;
     }
     
     HASH_SORT(doc_scores, doc_score_sort);
