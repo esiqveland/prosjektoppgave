@@ -3,3 +3,8 @@
 corpus
 *.pyc
 target
+*/target
+*/bin
+bin
+*.dSYM
+*.xcodeproj
