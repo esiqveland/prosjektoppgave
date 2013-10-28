@@ -2,6 +2,16 @@
 \documentclass[a4paper, 12pt]{article}
 \usepackage{graphicx}
 \DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\usepackage{color}   %May be necessary if you want to color links
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true, %set true if you want colored links
+    linktoc=all,     %set to all if you want both sections and subsections linked
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=blue
+}
 
 \title{The Energy Efficiency of a Raspberry Pi Cluster used for Search}
 \author{Eivind Siqveland Larsen and Knut Nygaard}
