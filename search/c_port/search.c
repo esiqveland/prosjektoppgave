@@ -18,6 +18,7 @@
 #define DEFAULT_TERM_NUM 5
 #define DEBUG 1
 
+#define MAXOUTPUTSIZE 1024
 #define MAXBUFLEN 128
 
 typedef struct postings_entry postings_entry;
@@ -179,13 +180,13 @@ void print_query_struct_str(query** query_dict, char* target) {
     int charcounter = 0;
     for(entry=*query_dict; entry != NULL; entry=entry->hh.next) {
         current_dict_entry = find_dict_entry(entry->term);
-        charcounter += sprintf(target+charcounter, "%s: %f\n\t", entry->term, entry->score);
+        charcounter += snprintf(target+charcounter, MAXOUTPUTSIZE-charcounter, "%s: %f\n\t", entry->term, entry->score);
         postings_entry* postentry = current_dict_entry->posting;
         while(postentry) {
-            charcounter += sprintf(target+charcounter, "%d ", postentry->docId);
+            charcounter += snprintf(target+charcounter, MAXOUTPUTSIZE-charcounter, "%d ", postentry->docId);
             postentry = postentry->next;
         }
-        charcounter += sprintf(target+charcounter, "\n\t");
+        charcounter += snprintf(target+charcounter, MAXOUTPUTSIZE-charcounter, "\n\t");
     }
 
 }
@@ -299,6 +300,17 @@ int doc_score_sort(void* a, void* b) {
     return 0;
 }
 
+void print_doc_score_str(doc_score** doc_scores, char* target) {
+    doc_score* element = NULL;
+    doc_score* tmp = NULL;
+    int printsize = 0;
+    HASH_ITER(hh, *doc_scores, element, tmp) {
+        if(printsize < MAXOUTPUTSIZE-24) {
+            printsize += snprintf(target+printsize, MAXOUTPUTSIZE-printsize, "%d %f\n", element->docid, element->score);
+        }
+    }
+}
+
 void print_doc_scoring(doc_score** doc_scores) {
     doc_score* element = NULL;
     doc_score* tmp = NULL;
@@ -308,7 +320,7 @@ void print_doc_scoring(doc_score** doc_scores) {
     }
 }
 
-void score_query(query** query_dict) {
+void score_query(query** query_dict, char* target_str) {
     doc_score* doc_scores = NULL;
 
     query* entry;
@@ -320,7 +332,7 @@ void score_query(query** query_dict) {
 
         float idf_term = N/(dict_entry->occurences+1);
         idf_term = logf(idf_term);
-        
+
         int j;
         for(j = 0; j < dict_entry->occurences; j++) {
             doc_score* score = lookup_doc_score(&doc_scores, posting->docId);
@@ -340,17 +352,17 @@ void score_query(query** query_dict) {
     }
     squared_sum_of_weights = sqrtf(squared_sum_of_weights);
     squared_sum_of_weights = 1/squared_sum_of_weights;
-    
+
     doc_score* element = NULL;
     doc_score* tmp = NULL;
     HASH_ITER(hh, doc_scores, element, tmp) {
         element->score = element->score*squared_sum_of_weights;
     }
-    
+
     HASH_SORT(doc_scores, doc_score_sort);
-    if(DEBUG) {
-        print_doc_scoring(&doc_scores);
-    }
+    print_doc_score_str(&doc_scores, target_str);
+
+    //cleanup
     element = NULL;
     tmp = NULL;
     HASH_ITER(hh, doc_scores, element, tmp) {
@@ -370,7 +382,7 @@ void prefetch_tokens(query** query_dict) {
 
 void doSearch(char* querystr, char* result_target) {
     query* query_dict = NULL;
-    
+
     if(DEBUG)
         printf("given query: %s\n", querystr);
 
@@ -378,9 +390,8 @@ void doSearch(char* querystr, char* result_target) {
 
     prefetch_tokens(&query_dict);
 
-    score_query(&query_dict);
+    score_query(&query_dict, result_target);
 
-    print_query_struct_str(&query_dict, result_target);
     delete_query_struct(&query_dict);
 
 }
@@ -421,7 +432,7 @@ void startLocalServer(){
     } payload;
 
     payload p;
-    char* strbuffer = malloc(1024);
+    char* strbuffer = malloc(MAXOUTPUTSIZE);
 
     printf("Ready for query...\n");
     for(;;)
@@ -451,6 +462,10 @@ void startLocalServer(){
         char* querystr = strdup(p.msg);
         doSearch(querystr, strbuffer);
 
+        if(DEBUG) {
+            printf("%s", strbuffer);
+        }
+
 
         // printf("Done\n");
         // printf("Sending answer...\n");
@@ -479,7 +494,7 @@ int main(int argc, char* argv[])
     if(argc > 1) {
 
         char* searchstr = strdup(argv[1]);
-        char* result = malloc(1024);
+        char* result = malloc(MAXOUTPUTSIZE);
 
         long long before = wall_clock_time();
 
@@ -492,7 +507,10 @@ int main(int argc, char* argv[])
         long long el = after-before;
         float mytime = (float)el/1000000000.0;
 
-        printf("ELAPSED: %f s\n\n", mytime);
+        printf("ELAPSED doSearch: %f s\n\n", mytime);
+        if(DEBUG) {
+            printf("%s", result);
+        }
         free(result);
     } else {
         startLocalServer();
