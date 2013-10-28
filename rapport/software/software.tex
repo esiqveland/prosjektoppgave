@@ -1,8 +1,22 @@
 
 \section{Software}
+\subsection{Searching in general}
+Lorem ipsum\cite{IntroIR}
 \subsection{Operating system and environment}
+\subsection{Load generator}
+The purpose of the load generator is to generate psudo-random queries and send these to the load distributor to simulate load on the cluster. These queries are of varying length and contains a subset of the tokens found in the dictionary. It also includes some tokens not found in the dictionary. 
+
+The load generator runs on several threads, where one thread is responsible for receiving answers for the queries, and one or more threads are responsible for generating load for the system. The load generator is implemented in python and ment to be run on a node outside the cluster.
+
+The load generator includes some configurable parameters, most importantly the frequency of the queries being sent and the number of threads sending queries simultainious.
+
+\subsection{Load distribution}
+One of the nodes in the cluster will be in charge of load distribution. This node will receive all the queries and then forward them to the worker nodes. This node has information about the other nodes will spread the workload across the cluster. Since all communication has to go through this node we could end up with the performance of the cluster being limited by the load distributor.  
+
 \subsection{Original python version}
+
 \subsection{Optimized C-port}
 In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds. We therefore decided to rewrite the program using C. This also proved useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
 \subsubsection{Problems}
 The first testings of the
+
