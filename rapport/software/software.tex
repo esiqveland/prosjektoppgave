@@ -1,7 +1,7 @@
 
 \section{Software}
 \subsection{Searching in general}
-Since a significant part of our project is related to searching, we find it resonable to include a section on how a search engine works in general. The engine consists of two parts: the inverted index and the postings file, and must perform two tasks: indexing and searching.
+Since a significant part of our project is related to searching, we find it reasonable to include a section on how a search engine works in general. The engine consists of two parts: the inverted index and the postings file. There are two parts to this: indexing and searching.
 
 When performing the indexing task, a loop runs over all the documents in the corpus. For every term encountered in a document, the token\footnote{A token what is left after preprocessing a term. This preprocessing usually includes stemming and removal of special characters.} is added to a dictionary and the document id is appended to the token's postings list. A counter is also kept along with the id to keep track of multiple occurences of the same token in the same document.
 
