@@ -1,20 +1,26 @@
-
+\clearpage
 \section{Software}
+\subsection{OS}
+As the authors had most experience with Arch Linux and it's environment, we decided to go with the distribution provided by the Arch Linux for ARM project.
+The OS is distributed as a ISO image, which is written to the SD card using the UNIX disk utility dd:
+\begin{lstlisting}
+dd if=inputimage.iso of=/dev/outdisk bs=1M
+\end{lstlisting}
+
 \subsection{Searching in general}
 Since a significant part of our project is related to searching, we find it reasonable to include a section on how a search engine works in general. The engine consists of two parts: the inverted index and the postings file. There are two parts to this: indexing and searching.
 
 When performing the indexing task, a loop runs over all the documents in the corpus. For every term encountered in a document, the token\footnote{A token what is left after preprocessing a term. This preprocessing usually includes stemming and removal of special characters.} is added to a dictionary and the document id is appended to the token's postings list. A counter is also kept along with the id to keep track of multiple occurences of the same token in the same document.
 
-The result of this loop is a dictionary of all tokens encountered along with postings lists naming all the documents that contain each token. This dictionary is split into two parts: a postings file containing all the  postings lists written to disk in binary, and an inverted index containing the token, a pointer the token's corrensponding postings list and the number of documents containing the token.
+The result of this loop is a dictionary of all tokens encountered along with postings lists naming all the documents that contain each token. This dictionary is split into two parts: a postings file containing all the  postings lists written to disk in binary, and an inverted index containing the token, a pointer the token's corresponding postings list and the number of documents containing the token.
 
-\begin{figure}
-    \includegraphics[width=0.4\textwidth]{software/index_postings_lists}
+\begin{figure}[h]
+    \includegraphics[width=0.5\textwidth]{software/index_postings_lists}
     \caption{A sample index and postings list.}
     \label{fig:index_postings_lists_sw}
 \end{figure}
 
-In the searching step one is usually working with a query containing one or more terms. For each token the corrensponding postings list is fetched from disk. Each document is then scored according to a scoring scheme and a list of the documents sorted by the score is returned to the application.\cite{IntroIR}
-
+In the searching step one is usually working with a query containing one or more terms. For each token the corresponding postings list is fetched from disk. Each document is then scored according to a scoring scheme and a list of the documents sorted by the score is returned to the application.\cite{IntroIR}
 
 
 \subsection{Operating system and environment}
@@ -26,12 +32,21 @@ The load generator runs on several threads, where one thread is responsible for 
 The load generator includes some configurable parameters, most importantly the frequency of the queries being sent and the number of threads sending queries simultaneously.
 
 \subsection{Load distribution}
-One of the nodes in the cluster will be in charge of load distribution. This node will receive all the queries and then forward them to the worker nodes. This node has information about the other nodes will spread the workload across the cluster. Since all communication has to go through this node we could end up with the performance of the cluster being limited by the load distributor.
+One of the nodes in the cluster will be in charge of load distribution. The load distributor node will receive all the queries and then forward them to the worker nodes.
+The node employs the very simple load balancing scheme of $$rand() \bmod N,$$ where N is the number of nodes in the cluster.
+The messages from the load distributor to the worker nodes includes information of where to deliver the search results when they are ready.
+This scheme is simple, but could also prove to be a bottleneck of the system. Seeing as all communication has to go through this node we could end up with the performance of the cluster being limited by the load distributor.
 
 \subsection{Original python version}
+The python version we were basing the program on relied heavily upon the python based Natural Language Toolkit\cite{nltk} (NLTK).
+NLTK provides a lot of useful methods for processing natural languages in Python, including different tools for stemming and other tokenization tricks.
+Stemming is the process of reducing inflected or conjugated words into their basic or root form. Examples include removal of prefixes, suffixes, tense and vowel changes. I.e. words like ``fishing'', ``fisher'' and ``fished'' all end up mapping to the same stem ``fish''.
+
+The toolkit also provides stop word lists and improved splicing of natural language sentences. As this is a lot of work to implement, we have chosen to do indexing in python and deliver and calculate search results based only on the stemmed forms.
 
 \subsection{Optimized C-port}
 In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds. We therefore decided to rewrite the program using C. This also proved useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
-\subsubsection{Problems}
-The first testings of the
+\subsubsection{uthash}
+\subsubsection{Experiences}
+The first testings of the C-port showed significant improvements in delivery speed. It further confirmed that managing memory yourself is desirable for performance.
 

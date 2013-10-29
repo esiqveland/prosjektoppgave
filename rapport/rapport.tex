@@ -4,6 +4,10 @@
 \DeclareGraphicsExtensions{.pdf,.png,.jpg}
 \usepackage{color}   %May be necessary if you want to color links
 \usepackage{hyperref}
+\usepackage{mathtools}
+\usepackage{listings}
+%\usepackage{inconsolata}
+
 
 \hypersetup{
     colorlinks=true, %set true if you want colored links
@@ -15,13 +19,24 @@
 }
 
 \title{The Energy Efficiency of a Raspberry Pi Cluster used for Search}
-\author{Eivind Siqveland Larsen and Knut Nygaard}
+\author{Eivind Siqveland Larsen and Knut Nygaard,\\
+        Department of Computer Science,\\
+        NTNU,
+        Trondheim}
 
 \begin{document}
 \maketitle
 
+\input{introduction/summary}
 \input{introduction/introduction}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{hardware/RaspberryPi}
+    \caption{A Raspberry PI}
+    \label{fig:raspberrypi_hw}
+\end{figure}
 
+\clearpage
 \tableofcontents
 
 \input{related/related.tex}
@@ -34,6 +49,7 @@
 
 \input{conclusion/conclusion}
 
+\clearpage
 \bibliographystyle{plain}
 \bibliography{references}
 
