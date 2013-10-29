@@ -498,7 +498,6 @@ int main(int argc, char* argv[])
 
         long long before = wall_clock_time();
 
-
         doSearch(searchstr, result);
 
         free(searchstr);
