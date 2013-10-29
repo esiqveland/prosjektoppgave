@@ -1,7 +1,11 @@
 \clearpage
 \section{Software}
-\section{OS}
+\subsection{OS}
 As the authors had most experience with Arch Linux and it's environment, we decided to go with the distribution provided by the Arch Linux for ARM project.
+The OS is distributed as a ISO image, which is written to the SD card using the UNIX disk utility dd:
+\begin{lstlisting}
+dd if=inputimage.iso of=/dev/outdisk bs=1M
+\end{lstlisting}
 
 \subsection{Searching in general}
 Since a significant part of our project is related to searching, we find it reasonable to include a section on how a search engine works in general. The engine consists of two parts: the inverted index and the postings file. There are two parts to this: indexing and searching.
