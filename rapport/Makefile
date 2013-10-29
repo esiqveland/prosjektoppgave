@@ -1,2 +1,2 @@
 all:
-	latexmk -pdf -auxdir=target -outdir=target rapport.tex && open target/rapport.pdf
+	latexmk -pdf -auxdir=target -outdir=target -gg rapport.tex && open target/rapport.pdf
