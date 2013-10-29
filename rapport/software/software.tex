@@ -26,7 +26,10 @@ The load generator runs on several threads, where one thread is responsible for 
 The load generator includes some configurable parameters, most importantly the frequency of the queries being sent and the number of threads sending queries simultaneously.
 
 \subsection{Load distribution}
-One of the nodes in the cluster will be in charge of load distribution. This node will receive all the queries and then forward them to the worker nodes. This node has information about the other nodes will spread the workload across the cluster. Since all communication has to go through this node we could end up with the performance of the cluster being limited by the load distributor.
+One of the nodes in the cluster will be in charge of load distribution. The load distributor node will receive all the queries and then forward them to the worker nodes.
+The node employs the very simple load balancing scheme of $$rand() \bmod N,$$ where N is the number of nodes in the cluster.
+The messages from the load distributor to the worker nodes includes information of where to deliver the search results when they are ready.
+This scheme is simple, but could also prove to be a bottleneck of the system. Seeing as all communication has to go through this node we could end up with the performance of the cluster being limited by the load distributor.
 
 \subsection{Original python version}
 
