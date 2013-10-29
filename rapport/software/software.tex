@@ -8,7 +8,7 @@ dd if=inputimage.iso of=/dev/outdisk bs=1M
 \end{lstlisting}
 
 \subsection{Searching in general}
-Since a significant part of our project is related to searching, we find it reasonable to include a section on how a search engine works in general. The engine consists of two parts: the inverted index and the postings file. There are two parts to this: indexing and searching.
+Since a significant part of our project is related to searching, we find it reasonable to include a section on how a search engine works in general. The engine consists of two parts: the inverted index and the postings file. There are two parts to this: indexing and searching.\cite{IntroIR}
 
 When performing the indexing task, a loop runs over all the documents in the corpus. For every term encountered in a document, the token\footnote{A token what is left after preprocessing a term. This preprocessing usually includes stemming and removal of special characters.} is added to a dictionary and the document id is appended to the token's postings list. A counter is also kept along with the id to keep track of multiple occurences of the same token in the same document.
 
@@ -16,11 +16,11 @@ The result of this loop is a dictionary of all tokens encountered along with pos
 
 \begin{figure}[h]
     \includegraphics[width=0.5\textwidth]{software/index_postings_lists}
-    \caption{A sample index and postings list.}
+    \caption{A sample index and postings list.\cite{IntroIR}}
     \label{fig:index_postings_lists_sw}
 \end{figure}
 
-In the searching step one is usually working with a query containing one or more terms. For each token the corresponding postings list is fetched from disk. Each document is then scored according to a scoring scheme and a list of the documents sorted by the score is returned to the application.\cite{IntroIR}
+In the searching step one is usually working with a query containing one or more terms. For each token the corresponding postings list is fetched from disk. Each document is then scored according to a scoring scheme and a list of the documents sorted by the score is returned to the application.
 
 
 \subsection{Operating system and environment}
