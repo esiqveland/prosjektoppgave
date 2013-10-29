@@ -7,6 +7,7 @@
 \usepackage{mathtools}
 %\usepackage{inconsolata}
 
+
 \hypersetup{
     colorlinks=true, %set true if you want colored links
     linktoc=all,     %set to all if you want both sections and subsections linked
@@ -17,11 +18,15 @@
 }
 
 \title{The Energy Efficiency of a Raspberry Pi Cluster used for Search}
-\author{Eivind Siqveland Larsen and Knut Nygaard}
+\author{Eivind Siqveland Larsen and Knut Nygaard,\\
+        Department of Computer Science,\\
+        NTNU,
+        Trondheim}
 
 \begin{document}
 \maketitle
 
+\input{introduction/summary}
 \input{introduction/introduction}
 \begin{figure}
     \centering
@@ -30,6 +35,7 @@
     \label{fig:raspberrypi_hw}
 \end{figure}
 
+\clearpage
 \tableofcontents
 
 \input{related/related.tex}
@@ -43,6 +49,7 @@ this is some sample text where I need to cite someone \cite{BEOwulf}
 
 \input{conclusion/conclusion}
 
+\clearpage
 \bibliographystyle{plain}
 \bibliography{references}
 
