@@ -8,7 +8,7 @@ When performing the indexing task, a loop runs over all the documents in the cor
 The result of this loop is a dictionary of all tokens encountered along with postings lists naming all the documents that contain each token. This dictionary is split into two parts: a postings file containing all the  postings lists written to disk in binary, and an inverted index containing the token, a pointer the token's corrensponding postings list and the number of documents containing the token.
 
 \begin{figure}
-    \includegraphics[width=0.5\textwidth]{software/index_postings_lists}
+    \includegraphics[width=0.4\textwidth]{software/index_postings_lists}
     \caption{A sample index and postings list.}
     \label{fig:index_postings_lists_sw}
 \end{figure}
