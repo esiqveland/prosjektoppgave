@@ -2,7 +2,7 @@
 \documentclass[a4paper, 12pt]{article}
 \usepackage{graphicx}
 \DeclareGraphicsExtensions{.pdf,.png,.jpg}
-\usepackage{color}   %May be necessary if you want to color links
+\usepackage{xcolor}   %May be necessary if you want to color links
 \usepackage{hyperref}
 \usepackage{mathtools}
 \usepackage{listings}
@@ -18,6 +18,21 @@
     urlcolor=blue
 }
 
+\lstdefinestyle{customc}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=single,
+  language=C,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{green!40!black},
+  commentstyle=\itshape\color{purple!40!black},
+  identifierstyle=\color{blue},
+  stringstyle=\color{orange},
+  tabsize=4
+}
+\lstset{escapechar=@,style=customc}
+
 \title{The Energy Efficiency of a Raspberry Pi Cluster used for Search}
 \author{Eivind Siqveland Larsen and Knut Nygaard,\\
         Department of Computer Science,\\
@@ -29,7 +44,7 @@
 
 \input{introduction/summary}
 \input{introduction/introduction}
-\begin{figure}
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.5\textwidth]{hardware/RaspberryPi}
     \caption{A Raspberry PI}
