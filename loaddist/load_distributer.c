@@ -52,12 +52,12 @@ void setup(){
     char * node_address[8];
 
     node_address[0] = "192.168.0.200";
-   	node_address[1] = "192.168.0.201";
-   	node_address[2] = "192.168.0.202";
-   	node_address[3] = "192.168.0.203";
-   	node_address[4] = "192.168.0.204";
-   	node_address[5] = "192.168.0.205";
-   	node_address[6] = "192.168.0.206";
+    node_address[1] = "192.168.0.201";
+    node_address[2] = "192.168.0.202";
+    node_address[3] = "192.168.0.203";
+    node_address[4] = "192.168.0.204";
+    node_address[5] = "192.168.0.205";
+    node_address[6] = "192.168.0.206";
     node_address[7] = "192.168.0.207";
 
     bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
@@ -80,7 +80,7 @@ void setup(){
 
     for(;;)
     {
-        printf("Ready for query...\n");
+        //printf("Ready for query...\n");
         bzero(&p,sizeof(p));
         len = sizeof(useraddr);
 
@@ -105,8 +105,8 @@ void setup(){
         p.port = useraddr.sin_port;
         strcpy(p.msg, temp_buff);
 
-        printf("received from user on port: %hu, ip: %s\n",ntohs(p.port),inet_ntoa(useraddr.sin_addr));
-        printf("query: %s\n",p.msg);
+        //printf("received from user on port: %hu, ip: %s\n",ntohs(p.port),inet_ntoa(useraddr.sin_addr));
+        //printf("query: %s\n",p.msg);
 
 
         // We have a request, send to a working node
@@ -116,8 +116,8 @@ void setup(){
         int node = 0;
         nodeaddr.sin_addr.s_addr = inet_addr(node_address[0]);
 
-        printf("Sending message to node number %d: %s\n",node, node_address[node]);
-	printf("Message:\n%s\n", p.msg);
+        //printf("Sending message to node number %d: %s\n",node, node_address[node]);
+        //printf("Message:\n%s\n", p.msg);
         sendto(sockfd,&p,sizeof(p),0,(struct sockaddr *)&nodeaddr,sizeof(nodeaddr));
     }
     close(sockfd);
