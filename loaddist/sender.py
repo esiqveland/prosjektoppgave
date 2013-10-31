@@ -114,6 +114,7 @@ class Connection:
     def sendMessage(self, counts):
         time.sleep(5)
 
+        print "sending packets:", counts
         addrTuple = (load_dir_ip, load_dir_port)
         while counts > 0:
             #print("Sending message " + message + " to IP: " + self.ip)
@@ -121,6 +122,7 @@ class Connection:
             self.socket.sendto(self.generateMessage(), addrTuple)
             counts -= 1
         self.socket.close()
+        print "Done!"
 
     def bind(self):
         self.socket.bind((self.ip, self.port))
@@ -128,17 +130,22 @@ class Connection:
 
     def receiveData(self):
         t0 = time.time()
-        t1 = time.time()
         counter = 0
+        bytes_recv = 0
 
         print "Receiver: waiting for data...\n"
         while True:
+            if counter == messages_to_send:
+                break
             try:
-                message_received = self.socket.recv(connection_buffer_size)
+                message = self.socket.recv(connection_buffer_size)
                 counter += 1
             except timeout:
                 print "done: Received " + str(counter) + " answers for " + str(messages_to_send) + " queries."
                 break
+        t1 = time.time()
+        print "done: Received " + str(counter) + " answers for " + str(messages_to_send) + " queries."
+        print "Time:", t1-t0
 
 
 class ConnectionThread (threading.Thread):
@@ -158,22 +165,22 @@ class ConnectionThread (threading.Thread):
             self.connection.bind()
             self.connection.receiveData()
 
-        print "Exiting " + self.name + "\n"
+        print str(self.threadID) + "Exiting " + self.name + "\n"
 
 
 # --- CONFIG --- #
-messages_to_send = 100000
-# sleep_time_between_sends = 0.0003  # MAC
-sleep_time_between_sends = 0.01  # PI
+messages_to_send = 1000
+sleep_time_between_sends = 0.001  # MAC
+#sleep_time_between_sends = 0.01  # PI
 number_of_sending_threads = 1
 sending_thread_list = []
 connection_buffer_size = 1024
 
 my_rec_port = 32000
-my_ip = "192.168.0.101"
+my_ip = "192.168.0.104"
 rec_timeout = 15
 load_dir_port = 32002
-load_dir_ip = "192.168.0.101"
+load_dir_ip = "192.168.0.106"
 dictionary_path = "target/dictionary.txt"
 
 # --- END OF CONFIG --- #
@@ -192,5 +199,10 @@ for i in range(1, number_of_sending_threads + 1):
 
 for thread in sending_thread_list:
     thread.start()
+
+for thread in sending_thread_list:
+    if thread.isAlive():
+        thread.join()
+receiving_thread.join()
 
 print "Exiting Main Thread"
