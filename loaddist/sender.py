@@ -18,6 +18,7 @@ class Query:
                     self.wordlist.append(entry[0])
                 return True
         except IOError:
+            print "Could not open file:", dict_filepath
             return False
 
     def populateWordlist(self, dictionary_file=None):
@@ -170,10 +171,10 @@ sending_thread_list = []
 connection_buffer_size = 1024
 
 my_rec_port = 32000
-my_ip = "192.168.0.101"
+my_ip = "192.168.0.102"
 rec_timeout = 15
 load_dir_port = 32002
-load_dir_ip = "192.168.0.101"
+load_dir_ip = "192.168.0.106"
 dictionary_path = "target/dictionary.txt"
 
 # --- END OF CONFIG --- #
