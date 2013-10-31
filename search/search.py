@@ -14,8 +14,6 @@ def getListofTupleelement(list):
         tempList.append(lookUpName(y))
     return tempList
 
-
-
 def uniqueAndCounterList(query):
     queryWithoutDuplicates = []
     queryCounter = []
