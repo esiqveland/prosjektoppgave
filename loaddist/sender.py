@@ -18,6 +18,7 @@ class Query:
                     self.wordlist.append(entry[0])
                 return True
         except IOError:
+            print "Could not open file:", dict_filepath
             return False
 
     def populateWordlist(self, dictionary_file=None):

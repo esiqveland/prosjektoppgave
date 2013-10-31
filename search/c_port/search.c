@@ -16,7 +16,8 @@
 #include <time.h>
 
 #define DEFAULT_TERM_NUM 5
-#define DEBUG 1
+#define DEBUG 0
+#define CONFIG_PORT 32003
 
 #define MAXOUTPUTSIZE 1024
 #define MAXBUFLEN 128
@@ -403,7 +404,7 @@ void startLocalServer(){
     FILE* fconfig = fopen(configfile, "r");
     fgets(configbuffer, 16, fconfig);
 
-    printf("Starting server on ip: %s\n", configbuffer);
+    printf("Starting server on ip: %s:%d\n", configbuffer, CONFIG_PORT);
 
     int sockfd;
     ssize_t n;
@@ -416,7 +417,7 @@ void startLocalServer(){
     bzero(&my_addr,sizeof(my_addr));
     my_addr.sin_family = AF_INET;
     my_addr.sin_addr.s_addr = inet_addr(configbuffer);
-    my_addr.sin_port=htons(32003);
+    my_addr.sin_port=htons(CONFIG_PORT);
 
     bzero(&useraddr,sizeof(useraddr));
     useraddr.sin_family = AF_INET;
