@@ -16,7 +16,7 @@
 #include <time.h>
 
 #define DEFAULT_TERM_NUM 5
-#define DEBUG 1
+#define DEBUG 0
 #define CONFIG_PORT 32003
 
 #define MAXOUTPUTSIZE 1024
