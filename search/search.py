@@ -45,7 +45,7 @@ def getPosting(term):
     for i in xrange(0,dictionary[term][2]):
         docID = struct.unpack('i',postingsFile.read(4))[0]
         termFreq = struct.unpack('i',postingsFile.read(4))[0]
-        abstract.append((docID,termFreq))
+        abstract.append((docID, termFreq))
     return (title,abstract)
 
 # Looks up the fileId in the dictionary and
