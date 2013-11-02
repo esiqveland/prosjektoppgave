@@ -10,15 +10,15 @@ hostname = socket.gethostname()
 
 os.chdir(prosjektdir)
 
-def update_git:
+def update_git():
     subprocess.call(["git", "pull"])
     subprocess.call(["make"])
 
-def launch_load_distr:  
+def launch_load_distr():  
     subprocess.call(["bin/load_distributor_bin"])
     pass
 
-def launch_search_engine:
+def launch_search_engine():
     subprocess.call(["bin/search_bin"])
     pass
 
