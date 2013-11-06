@@ -178,10 +178,10 @@ sending_thread_list = []
 connection_buffer_size = 1024
 
 my_rec_port = 32000
-my_ip = "192.168.0.104"
+my_ip = "192.168.0.101"
 rec_timeout = 15
 load_dir_port = 32002
-load_dir_ip = "192.168.0.106"
+load_dir_ip = "192.168.0.200"
 dictionary_path = "target/dictionary.txt"
 
 # --- END OF CONFIG --- #

@@ -49,16 +49,16 @@ void setup(){
     nodeaddr.sin_family = AF_INET;
     nodeaddr.sin_port=htons(CONFIG_TARGET_PORT);
 
-    char * node_address[8];
+    char * node_address[7];
 
     node_address[0] = "192.168.0.200";
     node_address[1] = "192.168.0.201";
     node_address[2] = "192.168.0.202";
     node_address[3] = "192.168.0.203";
-    node_address[4] = "192.168.0.204";
-    node_address[5] = "192.168.0.205";
-    node_address[6] = "192.168.0.206";
-    node_address[7] = "192.168.0.207";
+    //node_address[4] = "192.168.0.204";
+    node_address[4] = "192.168.0.205";
+    node_address[5] = "192.168.0.206";
+    node_address[6] = "192.168.0.207";
 
     bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
 
@@ -112,8 +112,7 @@ void setup(){
         // We have a request, send to a working node
 
         // Select node
-
-        int node = 0;
+        int node = rand() % 7;
         nodeaddr.sin_addr.s_addr = inet_addr(node_address[0]);
 
         //printf("Sending message to node number %d: %s\n",node, node_address[node]);
