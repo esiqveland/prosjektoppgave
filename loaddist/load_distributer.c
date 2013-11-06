@@ -112,7 +112,7 @@ void setup(){
         // We have a request, send to a working node
 
         // Select node
-        int node = rand() % 7;
+        int node = (rand() % 6) + 1;
         nodeaddr.sin_addr.s_addr = inet_addr(node_address[node]);
 
         //printf("Sending message to node number %d: %s\n",node, node_address[node]);
