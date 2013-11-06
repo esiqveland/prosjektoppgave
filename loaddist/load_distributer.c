@@ -58,7 +58,7 @@ void setup(){
     //node_address[4] = "192.168.0.204";
     node_address[4] = "192.168.0.205";
     node_address[5] = "192.168.0.206";
-    node_address[6] = "192.168.0.207";
+    node_address[6] = "192.168.0.207"; // og 199
 
     bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
 
@@ -113,7 +113,7 @@ void setup(){
 
         // Select node
         int node = rand() % 7;
-        nodeaddr.sin_addr.s_addr = inet_addr(node_address[0]);
+        nodeaddr.sin_addr.s_addr = inet_addr(node_address[node]);
 
         //printf("Sending message to node number %d: %s\n",node, node_address[node]);
         //printf("Message:\n%s\n", p.msg);
