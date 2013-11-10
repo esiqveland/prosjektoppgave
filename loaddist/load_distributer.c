@@ -80,36 +80,19 @@ void setup(){
 
     for(;;)
     {
-        //printf("Ready for query...\n");
         bzero(&p,sizeof(p));
         len = sizeof(useraddr);
 
-        bzero(&temp_buff,(sizeof(temp_buff)));
+        //bzero(&temp_buff,(sizeof(temp_buff)));
 
-        // int k;
-        // unsigned int m = sizeof(k);
-
-        // getsockopt(sockfd,SOL_SOCKET,SO_RCVBUF,(void *)&k, &m);
-        // // now the variable n will have the socket size
-        // printf("%d\n",k);
-        // printf("%d\n",m);
-
-
-
-        n = recvfrom(sockfd,&temp_buff,sizeof(temp_buff),0,(struct sockaddr *)&useraddr,&len);
-
-        //useraddr.sin_addr.s_addr = p.ip;
-        //useraddr.sin_port = p.port;
+        n = recvfrom(sockfd,&p.msg,sizeof(p.msg),0,(struct sockaddr *)&useraddr,&len);
 
         p.ip = useraddr.sin_addr.s_addr;
         p.port = useraddr.sin_port;
-        strcpy(p.msg, temp_buff);
+        //strcpy(p.msg, temp_buff);
 
         //printf("received from user on port: %hu, ip: %s\n",ntohs(p.port),inet_ntoa(useraddr.sin_addr));
         //printf("query: %s\n",p.msg);
-
-
-        // We have a request, send to a working node
 
         // Select node
         int node = (rand() % 6) + 1;
