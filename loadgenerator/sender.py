@@ -170,15 +170,15 @@ class ConnectionThread (threading.Thread):
 
 
 # --- CONFIG --- #
-messages_to_send = 1000
-sleep_time_between_sends = 0.001  # MAC
+messages_to_send = 1000000
+sleep_time_between_sends = 0.00045  # MAC
 #sleep_time_between_sends = 0.01  # PI
 number_of_sending_threads = 1
 sending_thread_list = []
 connection_buffer_size = 1024
 
 my_rec_port = 32000
-my_ip = "192.168.0.101"
+my_ip = "192.168.0.103"
 rec_timeout = 15
 load_dir_port = 32002
 load_dir_ip = "192.168.0.200"
