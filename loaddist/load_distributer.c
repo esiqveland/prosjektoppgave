@@ -84,7 +84,7 @@ void setup(){
 
     srand(time(NULL));
 
-
+    unsigned int node_counter = 0;
 
     for(;;)
     {
@@ -103,7 +103,8 @@ void setup(){
         //printf("query: %s\n",p.msg);
 
         // Select node
-        int node = (rand() % 6) + 1;
+        int node = (node_counter % NUM_TOTAL_NODES-1) + 1;
+        node_counter++;
         nodeaddr.sin_addr.s_addr = nodes[node];
 
         //printf("Sending message to node number %d: %s\n",node, node_address[node]);
