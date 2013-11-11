@@ -8,3 +8,5 @@ target
 bin
 *.dSYM
 *.xcodeproj
+corpus
+*corpus

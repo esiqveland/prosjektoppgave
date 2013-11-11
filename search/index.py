@@ -17,13 +17,13 @@ def usage():
 
 def makeDict(dictionary, tokens, index):
     for token in tokens:
-        term = re.sub('[^a-z0-9]', '', token)            
+        term = re.sub('[^a-z0-9]', '', token)
         term = stemmer.stem(term)
         if term == '':
             continue
 
         if term in dictionary:
-            if dictionary[term][index] != None:
+            if dictionary[term][index] is not None:
                 if docID in dictionary[term][index][0]:
                     iposinTitle = dictionary[term][index][0].index(docID)
                     dictionary[term][index][1][iposinTitle] = dictionary[term][index][1][iposinTitle] + 1
@@ -37,11 +37,11 @@ def makeDict(dictionary, tokens, index):
                     dictionary[term] = (dictionary[term][0],([docID],[1]))
         else:
             if index == 0:
-                dictionary[term] = (([docID],[1]),None)    
+                dictionary[term] = (([docID],[1]),None)
             else:
-                dictionary[term] = (None,([docID],[1]))    
-            
-    
+                dictionary[term] = (None,([docID],[1]))
+
+
 # Handle input arguments
 mapping_file = input_file_p = input_file_d = input_i = None
 
@@ -96,52 +96,23 @@ for file in files:
     print progressStr[:5] + "%"
 
     #allFilesList.append(int(file))
-    ptn, title, abstract, ipc = patentreader.parsefile(dataPath+file)
-    docid_mapping[docID]= ( file[:-4], ipc )
+    title = patentreader.parsefile(dataPath+file)
+    docid_mapping[docID] = (file, docID)
     file = docID
 
     title = nltk.sent_tokenize(title.lower())
-    abstract = nltk.sent_tokenize(abstract.lower())
     filepos = 0
     for sentence in title:
 
         tokens = nltk.word_tokenize(sentence)
-        
+
         # Perform stemming and replacement on token, then add to bigList
         makeDict(dictionary,tokens,0)
-    for sentence in abstract:
-        tokens = nltk.word_tokenize(sentence)
-        
-        # Perform stemming and replacement on token, then add to bigList
-        makeDict(dictionary,tokens,1)            
-
     docID += 1
-    
+
 print "100%"
 
 print "Writing files to disk..."
-
-# From the data in the postDataDict:
-# generate the proper dictionary with key, (count,pointer)
-
-#offset = 0
-#if phrase == 1:
-#    for k,v in postDataDict.iteritems():
-#        count = len(v)
-#        dictionary[k] = (count,offset)
-#
-#        listLength = 0
-#        for elements in v:
-#            listLength += len(elements[2])
-#
-#        offset += 8*count + ( 4 * listLength )
-#
-#else:
-#    for k,v in postDataDict.iteritems():
-#        count = len(v)
-#        dictionary[k] = (count,offset)
-#        
-#        offset += 8*count
 
 # Write postDataDict to file as binery
 post_file = open(input_file_p,'wb')
@@ -150,8 +121,8 @@ dict_file = open(input_file_d,'w')
 for term in dictionary:
     dict_file.write(term + ' ')
     dict_file.write(str(post_file.tell()) + ' ')
-    # If term is found in titles then write to dict and post    
-    if dictionary[term][0] != None:
+    # If term is found in titles then write to dict and post
+    if dictionary[term][0] is not None:
         dict_file.write(str(len(dictionary[term][0][0])) + ' ')
         titleTuple = dictionary[term][0]
         for i in range(0,len(titleTuple[0])):
@@ -160,18 +131,8 @@ for term in dictionary:
     # If term not found write standard value -1 -1 and nothing to post
     else:
         dict_file.write('0 ')
-    # If term is found in abstract then write to dict and post    
-    if dictionary[term][1] != None:
-        dict_file.write(str(len(dictionary[term][1][0])) + ' ')
-        abstractTuple = dictionary[term][1]
-        for i in range(0,len(abstractTuple[0])):
-            post_file.write(struct.pack('i',abstractTuple[0][i]))
-            post_file.write(struct.pack('i',abstractTuple[1][i]))
-    # If term not found write standard value -1 -1 and nothing to post
-    else:
-        dict_file.write('0')
     dict_file.write('\n')
-        
+
 dict_file.write('* 0 ' + str(docID) + " " + str(docID) + "\n")
 dict_file.close()
 post_file.close()

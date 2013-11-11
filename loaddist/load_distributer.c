@@ -11,8 +11,6 @@
 #include <time.h>
 
 #define MAXBUFLEN 1024
-#define NODE_IP_START_IP "192.168.0.100"
-#define NODE_IP_START_IP_NUM 100
 #define NODE_SERV_PORT 32002
 #define CONFIG_TARGET_PORT 32003
 #define NUM_TOTAL_NODES 7
