@@ -10,3 +10,5 @@ bin
 *.xcodeproj
 *training
 deprecated
+corpus
+*corpus

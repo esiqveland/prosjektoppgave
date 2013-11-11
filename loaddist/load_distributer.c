@@ -11,11 +11,9 @@
 #include <time.h>
 
 #define MAXBUFLEN 1024
-#define NODE_IP_START_IP "192.168.0.100"
-#define NODE_IP_START_IP_NUM 100
 #define NODE_SERV_PORT 32002
 #define CONFIG_TARGET_PORT 32003
-#define IP_LENGHT 8
+#define NUM_TOTAL_NODES 7
 
 void setup(){
     char* configfile = "config.txt";
@@ -49,7 +47,7 @@ void setup(){
     nodeaddr.sin_family = AF_INET;
     nodeaddr.sin_port=htons(CONFIG_TARGET_PORT);
 
-    char * node_address[7];
+    char * node_address[NUM_TOTAL_NODES];
 
     node_address[0] = "192.168.0.200";
     node_address[1] = "192.168.0.201";
@@ -59,6 +57,14 @@ void setup(){
     node_address[4] = "192.168.0.205";
     node_address[5] = "192.168.0.206";
     node_address[6] = "192.168.0.207"; // og 199
+
+    // convert addresses beforehand
+    in_addr_t nodes[NUM_TOTAL_NODES];
+
+    int asdf = 0;
+    for(asdf = 0; asdf < NUM_TOTAL_NODES; asdf++) {
+        nodes[asdf] = inet_addr(node_address[asdf]);
+    }
 
     bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
 
@@ -76,7 +82,7 @@ void setup(){
 
     srand(time(NULL));
 
-
+    unsigned int node_counter = 0;
 
     for(;;)
     {
@@ -95,8 +101,9 @@ void setup(){
         //printf("query: %s\n",p.msg);
 
         // Select node
-        int node = (rand() % 6) + 1;
-        nodeaddr.sin_addr.s_addr = inet_addr(node_address[node]);
+        int node = (node_counter % NUM_TOTAL_NODES-1) + 1;
+        node_counter++;
+        nodeaddr.sin_addr.s_addr = nodes[node];
 
         //printf("Sending message to node number %d: %s\n",node, node_address[node]);
         //printf("Message:\n%s\n", p.msg);
