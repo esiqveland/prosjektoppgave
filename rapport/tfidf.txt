@@ -1,0 +1,6 @@
+ddd.qqq
+lnc.ltc
+
+1+log(tf)*1*( 1/sqrt(W1 W2 Wm) )
+
+1+log(tf)*log(N/dft)*
