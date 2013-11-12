@@ -14,6 +14,7 @@
 #define NODE_SERV_PORT 32002
 #define CONFIG_TARGET_PORT 32003
 #define NUM_TOTAL_NODES 7
+#define NUM_TOTAL_WORKERS 6
 
 void setup(){
     char* configfile = "config.txt";
@@ -56,14 +57,14 @@ void setup(){
     //node_address[4] = "192.168.0.204";
     node_address[4] = "192.168.0.205";
     node_address[5] = "192.168.0.206";
-    node_address[6] = "192.168.0.207"; // og 199
+    node_address[6] = "192.168.0.207";
 
     // convert addresses beforehand
     in_addr_t nodes[NUM_TOTAL_NODES];
 
-    int asdf = 0;
-    for(asdf = 0; asdf < NUM_TOTAL_NODES; asdf++) {
-        nodes[asdf] = inet_addr(node_address[asdf]);
+    int counter = 0;
+    for(counter = 0; counter < NUM_TOTAL_NODES; counter++) {
+        nodes[counter] = inet_addr(node_address[counter]);
     }
 
     bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
@@ -101,7 +102,7 @@ void setup(){
         //printf("query: %s\n",p.msg);
 
         // Select node
-        int node = (node_counter % NUM_TOTAL_NODES-1) + 1;
+        int node = (node_counter % (NUM_TOTAL_NODES-1)) + 1;
         node_counter++;
         nodeaddr.sin_addr.s_addr = nodes[node];
 
