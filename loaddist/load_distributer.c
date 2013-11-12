@@ -102,7 +102,7 @@ void setup(){
         //printf("query: %s\n",p.msg);
 
         // Select node
-        int node = (node_counter % (NUM_TOTAL_NODES-1)) + 1;
+        int node = (node_counter % NUM_TOTAL_WORKERS) + 1;
         node_counter++;
         nodeaddr.sin_addr.s_addr = nodes[node];
 
