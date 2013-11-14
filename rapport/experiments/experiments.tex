@@ -2,11 +2,28 @@
 \clearpage
 \section{Experiments}
 
+\subsection{Introduction}
+In this section we experiment with the cluster to see how it performs and compare this to results from a MacBook Pro Late 2012. We plan on running these experiments in two phases, first to identify areas where improvement can be made along with bottlenecks and then after attempting to mitigate these to see if any improvement was made.
+
 \subsection{Setup}
+The setup is the cluster of 8 PI-nodes. Since we are limited by the 8 ports on our switch, we have the load distributor and the load generator connected to D-Link router that is then connected to the switch. 
 
 \subsection{Equipment}
+To measure results we use a combination of output from the system and measuring the power consumed by the system. To measure power usage we have a COITECH power consumption tool that is placed between the power outlet and our cluster.  
+
+\subsection{Experiments}
+
+\subsubsection{Maximum throughput} 
+The objective of this test was of course to try pinpoint the maximum throughput our system can handle. In order to test this we use a load generator which creates random queries and send these at various interval to the cluster. The load generator is run on a computer outside the cluster. 
+
+\subsubsection{Required amount of nodes to deliver maximum throughput}
+Since the load distributor is a bottleneck in our system, it could be interesting to see how many workers we need to still be able to perform at maximum throughput. In this experiment we have a look at the CPU utilization of the workers while gradually reducing the amount of workers in the cluster.
 
 \subsection{Results}
+\subsubsection{Maximum throughput}
+From our results we see that the cluster can function under a load of up to around 6250 request per second. After this we start to see a linear increase in dropped packages as we increase the load. At this throughput the load distributor is running at around 90\% CPU utilization while the workers are only using about 10\%. This clearly shows that it is the load distributor that is a limiting factor to the system. The network adapter being USB-driven might be the reason for this bottleneck.
+
+In order to improve the throughput we could move the load distribution into the load generator and use all the 8 nodes as workers.
 
 \subsubsection{Python}
 Initial testing
