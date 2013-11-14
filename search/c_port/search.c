@@ -28,9 +28,9 @@ static int N= 0;
 
 typedef struct {
     char* word;
-	uint32_t byte_offset;
-	uint32_t occurences;
-	uint32_t occurences_abstract;
+    uint32_t byte_offset;
+    uint32_t occurences;
+    uint32_t occurences_abstract;
     postings_entry* posting;
     UT_hash_handle hhd;         /* makes this structure hashable */
 } dictionary_entry;
@@ -93,9 +93,9 @@ void build_dictionary(const char* input_file_dict) {
     FILE* f = fopen(input_file_dict,"r");
     char* buffer = malloc(sizeof(char)*64);
     while(!feof(f)) {
-    	dictionary_entry* dict_entry = init_alloc_dictionary_entry();
+        dictionary_entry* dict_entry = init_alloc_dictionary_entry();
 
-    	fscanf(f, "%s %" SCNu32 " %" SCNu32 " %" SCNu32 "\n", buffer, &dict_entry->byte_offset,
+        fscanf(f, "%s %" SCNu32 " %" SCNu32 " %" SCNu32 "\n", buffer, &dict_entry->byte_offset,
                &dict_entry->occurences, &dict_entry->occurences_abstract);
         dict_entry->word = strdup(buffer);
         hash_dict_entry(dict_entry);
@@ -397,14 +397,20 @@ void doSearch(char* querystr, char* result_target) {
 
 }
 
-void startLocalServer(){
+int isPortSet(int port){
+    if(port == 0){
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+void startLocalServer(int given_port){
     char* configfile = "config.txt";
     char configbuffer[16];
 
     FILE* fconfig = fopen(configfile, "r");
     fgets(configbuffer, 16, fconfig);
-
-    printf("Starting server on ip: %s:%d\n", configbuffer, CONFIG_PORT);
 
     int sockfd;
     ssize_t n;
@@ -414,10 +420,19 @@ void startLocalServer(){
 
     sockfd=socket(AF_INET,SOCK_DGRAM,0);
 
-    bzero(&my_addr,sizeof(my_addr));
-    my_addr.sin_family = AF_INET;
-    my_addr.sin_addr.s_addr = inet_addr(configbuffer);
-    my_addr.sin_port=htons(CONFIG_PORT);
+    if (isPortSet(given_port)) {
+        bzero(&my_addr,sizeof(my_addr));
+        my_addr.sin_family = AF_INET;
+        my_addr.sin_addr.s_addr = inet_addr(configbuffer);
+        my_addr.sin_port=htons(given_port);
+        printf("Starting server on ip: %s:%d\n", configbuffer, given_port);
+    } else {
+        bzero(&my_addr,sizeof(my_addr));
+        my_addr.sin_family = AF_INET;
+        my_addr.sin_addr.s_addr = inet_addr(configbuffer);
+        my_addr.sin_port=htons(CONFIG_PORT);
+        printf("Starting server on ip: %s:%d\n", configbuffer, CONFIG_PORT);
+    }
 
     bzero(&useraddr,sizeof(useraddr));
     useraddr.sin_family = AF_INET;
@@ -492,9 +507,9 @@ int main(int argc, char* argv[])
     build_dictionary("target/dictionary.txt");
     N = find_dict_entry("*")->occurences;
     printf("Docs in collection: %d\n", N);
-    if(argc > 1) {
+    if(argc > 2) {
 
-        char* searchstr = strdup(argv[1]);
+        char* searchstr = strdup(argv[2]);
         char* result = malloc(MAXOUTPUTSIZE);
 
         long long before = wall_clock_time();
@@ -512,8 +527,15 @@ int main(int argc, char* argv[])
             printf("%s", result);
         }
         free(result);
-    } else {
-        startLocalServer();
+    } 
+    else if (argc > 1)
+    {
+        int port = atoi(argv[1]);
+        startLocalServer(port);
+    }
+
+    else {
+        startLocalServer(0);
     }
     print_dictionary();
 }
