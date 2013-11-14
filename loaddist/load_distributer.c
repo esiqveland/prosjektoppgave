@@ -13,8 +13,8 @@
 #define MAXBUFLEN 1024
 #define NODE_SERV_PORT 32002
 #define CONFIG_TARGET_PORT 32003
-#define NUM_TOTAL_NODES 7
-#define NUM_TOTAL_WORKERS 6
+#define NUM_TOTAL_NODES 8
+#define NUM_TOTAL_WORKERS 7
 
 void setup(){
     char* configfile = "config.txt";
@@ -54,10 +54,10 @@ void setup(){
     node_address[1] = "192.168.0.201";
     node_address[2] = "192.168.0.202";
     node_address[3] = "192.168.0.203";
-    //node_address[4] = "192.168.0.204";
-    node_address[4] = "192.168.0.205";
-    node_address[5] = "192.168.0.206";
-    node_address[6] = "192.168.0.207";
+    node_address[4] = "192.168.0.204";
+    node_address[5] = "192.168.0.205";
+    node_address[6] = "192.168.0.206";
+    node_address[7] = "192.168.0.207";
 
     // convert addresses beforehand
     in_addr_t nodes[NUM_TOTAL_NODES];
