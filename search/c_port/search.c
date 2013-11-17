@@ -466,7 +466,7 @@ void startLocalServer(int given_port){
         n = recvfrom(sockfd,&p,sizeof(p),0,(struct sockaddr *)&load_dist_addr,&len);
 
         useraddr.sin_addr.s_addr = p.ip;
-        useraddr.sin_port = htons(32000);
+        useraddr.sin_port = p.port;
         //useraddr.sin_port = p.port;
 
         // printf("port: %hu, ip: %s\n",ntohs(p.port),inet_ntoa(useraddr.sin_addr));
