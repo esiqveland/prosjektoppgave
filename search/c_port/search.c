@@ -112,7 +112,7 @@ void print_dictionary() {
 
     for(dict_entry=dictionary; dict_entry != NULL; dict_entry=dict_entry->hhd.next) {
         if(dict_entry->posting == NULL) {
-            //continue;
+            continue;
         }
 //        printf("%s %" SCNu32 " %" SCNu32 " %" SCNu32 "\n", dict_entry->word, dict_entry->byte_offset,
 //                dict_entry->occurences, dict_entry->occurences_abstract);
@@ -488,7 +488,6 @@ void startLocalServer(int given_port){
             printf("%s", strbuffer);
         }
 
-
         // printf("Done\n");
         // printf("Sending answer...\n");
 
@@ -515,7 +514,7 @@ int main(int argc, char* argv[])
     printf("Docs in collection: %d\n", N);
     if(argc > 2) {
 
-        char* searchstr = strdup(argv[2]);
+        char* searchstr = strdup(argv[1]);
         char* result = malloc(MAXOUTPUTSIZE);
 
         long long before = wall_clock_time();
@@ -529,10 +528,10 @@ int main(int argc, char* argv[])
         float mytime = (float)el/1000000000.0;
 
         printf("ELAPSED doSearch: %f s\n\n", mytime);
-        if(DEBUG) {
-            printf("%s", result);
-        }
+
+        printf("%s", result);
         free(result);
+        print_dictionary();
     } 
     else if (argc > 1)
     {
@@ -543,7 +542,6 @@ int main(int argc, char* argv[])
     else {
         startLocalServer(0);
     }
-    print_dictionary();
 }
 
 
