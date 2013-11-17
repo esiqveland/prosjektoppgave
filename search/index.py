@@ -85,20 +85,21 @@ allFilesList = []
 
 # Open the files one by one, tokenize the words, and generate the postDataDict
 docID = 0
+numdocs = 0
 numterms = 0
 docid_mapping = dict()
 for file in files:
     if file == '.DS_Store':
         continue
     # Print progress
-    progress = float(docID)/float(len(files)) * 100
+    progress = float(numdocs)/float(len(files)) * 100
     progressStr = str(progress)
     print progressStr[:5] + "%"
 
     #allFilesList.append(int(file))
     title = patentreader.parsefile(dataPath+file)
-    docid_mapping[docID] = (file, docID)
-    file = docID
+    docid_mapping[numdocs] = (file, numdocs)
+    docID = int(file)
 
     title = nltk.sent_tokenize(title.lower())
     filepos = 0
@@ -108,7 +109,7 @@ for file in files:
 
         # Perform stemming and replacement on token, then add to bigList
         makeDict(dictionary,tokens,0)
-    docID += 1
+    numdocs += 1
 
 print "100%"
 
@@ -133,7 +134,7 @@ for term in dictionary:
         dict_file.write('0 ')
     dict_file.write('\n')
 
-dict_file.write('* 0 ' + str(docID) + " " + str(docID) + "\n")
+dict_file.write('* 0 ' + str(numdocs) + " " + str(numdocs) + "\n")
 dict_file.close()
 post_file.close()
 
