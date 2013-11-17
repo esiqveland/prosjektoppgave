@@ -91,12 +91,15 @@ dictionary_entry* init_alloc_dictionary_entry() {
 // Reads the dictionary into memory
 void build_dictionary(const char* input_file_dict) {
     FILE* f = fopen(input_file_dict,"r");
-    char* buffer = malloc(sizeof(char)*64);
+    char* buffer = malloc(sizeof(char)*128);
     while(!feof(f)) {
         dictionary_entry* dict_entry = init_alloc_dictionary_entry();
 
-        fscanf(f, "%s %" SCNu32 " %" SCNu32 " %" SCNu32 "\n", buffer, &dict_entry->byte_offset,
-               &dict_entry->occurences, &dict_entry->occurences_abstract);
+//        fscanf(f, "%s %" SCNu32 " %" SCNu32 " %" SCNu32 "\n", buffer, &dict_entry->byte_offset,
+//               &dict_entry->occurences, &dict_entry->occurences_abstract);
+        fscanf(f, "%s %" SCNu32 " %" SCNu32 "\n", buffer, &dict_entry->byte_offset,
+               &dict_entry->occurences);
+
         dict_entry->word = strdup(buffer);
         hash_dict_entry(dict_entry);
     }
@@ -109,10 +112,13 @@ void print_dictionary() {
 
     for(dict_entry=dictionary; dict_entry != NULL; dict_entry=dict_entry->hhd.next) {
         if(dict_entry->posting == NULL) {
-            continue;
+            //continue;
         }
-        printf("%s %" SCNu32 " %" SCNu32 " %" SCNu32 "\n", dict_entry->word, dict_entry->byte_offset,
-                dict_entry->occurences, dict_entry->occurences_abstract);
+//        printf("%s %" SCNu32 " %" SCNu32 " %" SCNu32 "\n", dict_entry->word, dict_entry->byte_offset,
+//                dict_entry->occurences, dict_entry->occurences_abstract);
+        printf("%s %" SCNu32 " %" SCNu32 "\n", dict_entry->word, dict_entry->byte_offset,
+                dict_entry->occurences);
+
         postings_entry* posting = dict_entry->posting;
         if (posting != NULL) {
             printf("\t");
