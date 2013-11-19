@@ -95,12 +95,12 @@ class Query:
 
 
 class Connection:
-    def __init__(self, my_ip, target_ip, target_port, port, query_object=None):
+    def __init__(self, my_ip, target_ip, target_port, port, sock, query_object=None):
         self.ip = my_ip
         self.target_ip = target_ip
         self.port = port
         self.target_port = target_port
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket = sock
         self.bufferSize = 1024
         self.query_object = query_object
 
@@ -129,13 +129,7 @@ class Connection:
                 msg = struct.pack("=4sH1024s", socket.inet_aton(self.ip), socket.htons(self.port), msg)
             self.socket.sendto(msg, addrTuple)
             counts -= 1
-        self.socket.close()
         print "Done!"
-
-    def bind(self):
-        print "Listening on:", (self.ip, self.port)
-        self.socket.bind((self.ip, self.port))
-        self.socket.settimeout(15)
 
     def receiveData(self, count):
         t0 = time.time()
@@ -157,14 +151,14 @@ class Connection:
         print "Time:", t1-t0
 
 class ConnectionThread (threading.Thread):
-    def __init__(self, threadID, name, my_ip, target_ip, sleeptime, nmessages, target_port, port=32003, query_object=None):
+    def __init__(self, threadID, name, my_ip, target_ip, sleeptime, nmessages, target_port, sock, port=32003, query_object=None):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.name = name
         self.sleeptime = sleeptime
         self.nmessages = nmessages
         self.query_object = query_object
-        self.connection = Connection(my_ip=my_ip, target_ip=target_ip, target_port=target_port, port=port, query_object=query_object)
+        self.connection = Connection(my_ip=my_ip, target_ip=target_ip, target_port=target_port, sock=sock, port=port, query_object=query_object)
 
     def run(self):
         print "Starting " + self.name + "\n"
@@ -173,16 +167,15 @@ class ConnectionThread (threading.Thread):
         print str(self.threadID) + "Exiting " + self.name + "\n"
 
 class ReceiverThread (threading.Thread):
-    def __init__(self, threadID, name, nmessages, my_ip, port=32003):
+    def __init__(self, threadID, name, nmessages, my_ip, sock, port=32003):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.name = name
         self.nmessages = nmessages
-        self.connection = Connection(my_ip=my_ip, target_ip="0.0.0.0", port=port, target_port=32002)
+        self.connection = Connection(my_ip=my_ip, target_ip="0.0.0.0", port=port, sock=sock, target_port=32002)
 
     def run(self):
         print "Starting " + self.name + "\n"
-        self.connection.bind()
         self.connection.receiveData(self.nmessages)
         print str(self.threadID) + "Exiting " + self.name + "\n"
 
