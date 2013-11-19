@@ -99,6 +99,7 @@ for file in files:
     #allFilesList.append(int(file))
     title = patentreader.parsefile(dataPath+file)
     docid_mapping[numdocs] = (file, numdocs)
+    # set docID = numdocs if you want to do unique filename --> ID convertion
     docID = int(file)
 
     title = nltk.sent_tokenize(title.lower())
