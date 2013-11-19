@@ -94,8 +94,8 @@ void setup(){
 
         n = recvfrom(sockfd,&p.msg,sizeof(p.msg),0,(struct sockaddr *)&useraddr,&len);
 
-        p.ip = useraddr.sin_addr.s_addr;
-        p.port = useraddr.sin_port;
+        //p.ip = useraddr.sin_addr.s_addr;
+        //p.port = useraddr.sin_port;
         //strcpy(p.msg, temp_buff);
 
         //printf("received from user on port: %hu, ip: %s\n",ntohs(p.port),inet_ntoa(useraddr.sin_addr));
