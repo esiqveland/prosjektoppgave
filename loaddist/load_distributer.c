@@ -94,8 +94,10 @@ void setup(){
 
         n = recvfrom(sockfd,&p.msg,sizeof(p.msg),0,(struct sockaddr *)&useraddr,&len);
 
-        //p.ip = useraddr.sin_addr.s_addr;
-        //p.port = useraddr.sin_port;
+        p.ip = useraddr.sin_addr.s_addr;
+        //Hardcoding port as we dont send this in any way (at least it doesn't work)
+        p.port = htons(32005);
+
         //strcpy(p.msg, temp_buff);
 
         //printf("received from user on port: %hu, ip: %s\n",ntohs(p.port),inet_ntoa(useraddr.sin_addr));
