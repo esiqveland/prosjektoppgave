@@ -96,7 +96,8 @@ void setup(){
 
         p.ip = useraddr.sin_addr.s_addr;
         //Hardcoding port as we dont send this in any way (at least it doesn't work)
-        p.port = htons(32005);
+        p.port = useraddr.sin_port;
+
 
         //strcpy(p.msg, temp_buff);
 
