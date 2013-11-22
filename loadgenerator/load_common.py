@@ -117,7 +117,7 @@ class Connection:
 
     def sendMessage(self, counts, sleeptime):
         time.sleep(5)
-
+        start_time = time.time()
         print "sending packets:", counts
         addrTuple = (self.target_ip, self.target_port)
         print "target:", addrTuple
@@ -130,6 +130,8 @@ class Connection:
             self.socket.sendto(msg, addrTuple)
             counts -= 1
         print "Done!"
+        end_time = time.time()
+        print "sending took: " + str(end_time-start_time) + " seconds"
 
     def receiveData(self, count):
         t0 = time.time()
