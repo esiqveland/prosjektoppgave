@@ -5,7 +5,8 @@ import threading
 import time
 import struct
 
-class Query:
+
+class Query(object):
     def __init__(self, dict_filepath=None):
         self.wordlist = []
         self.populateWordlist(dictionary_file=dict_filepath)
@@ -182,3 +183,39 @@ class ReceiverThread (threading.Thread):
         print str(self.threadID) + "Exiting " + self.name + "\n"
 
 
+class QueryPremade(Query):
+    def __init__(self, queries_infile, loop_list=True):
+        self.counter = 0
+        self._lock = threading.RLock()
+        self.querylist = self.readQueries(infile=queries_infile)
+        self.isLooping = loop_list
+
+    def readQueries(self, infile):
+        lines = self.lineReader(infile=infile)
+        print "readQueries read {} queries".format(len(lines))
+        return lines
+
+    def lineReader(self, infile):
+        try:
+            with open(infile, 'r') as dictfp:
+                return dictfp.readlines()
+        except IOError:
+            print "Could not open query file: {}\nNo queries will be loaded!\n".format(infile)
+            return []
+
+    def generateQuery(self, numberOfWords=None):
+        return self.nextQuery()
+
+    def nextQuery(self):
+        ret = None
+        self._lock.acquire()
+        try:
+            if self.isLooping and self.counter >= len(self.querylist):
+                self.counter = 0
+            elif self.counter >= len(self.querylist):
+                raise IOError("query list is looped around!")
+            ret = self.querylist[self.counter]
+            self.counter += 1
+        finally:
+            self._lock.release()
+        return ret

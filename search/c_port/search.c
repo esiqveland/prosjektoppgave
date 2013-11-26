@@ -561,7 +561,7 @@ int run_queries_from_file(char* query_filename) {
     char* linebuffer = malloc(MAXOUTPUTSIZE);
     int counter = 0;
     FILE* query_file = fopen(query_filename, "r");
-    if(query_file == NULL) {
+    if(!query_file) {
         printf("error opening query file, exiting\n");
         return -1;
     }

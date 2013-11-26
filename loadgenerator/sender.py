@@ -3,6 +3,7 @@ import threading
 import time
 import random
 from load_common import *
+import sys
 
 node_set_localhost = ["127.0.0.1"]
 
@@ -41,15 +42,24 @@ nodes = node_set_localhost
 dictionary_path = "target/dictionary.txt"
 
 # --- END OF CONFIG --- #
+print "usage: {} [queries_file]".format(sys.argv[0])
+
+query_object = None
+
+query_infile = None
+if len(sys.argv) > 1:
+    query_infile = sys.argv[1]
+
+if query_infile:
+    query_object = QueryPremade(queries_infile=query_infile)
+else:
+    query_object = Query(dict_filepath=dictionary_path)
 
 #setup socket
 mysock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 mysock.bind((my_ip, recv_port))
 mysock.settimeout(15)
 print "Listening on:", (my_ip, recv_port)
-
-random.seed()
-query_object = Query(dict_filepath=dictionary_path)
 
 receiving_thread = ReceiverThread(threadID=0, name="Receiver", my_ip=my_ip,
                                   nmessages=messages_to_send*len(nodes), port=recv_port, sock=mysock)
