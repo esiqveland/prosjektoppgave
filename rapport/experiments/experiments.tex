@@ -9,21 +9,42 @@ In this section we experiment with the cluster to see how it performs and compar
 The setup is the cluster of 8 PI-nodes. Since we are limited by the 8 ports on our switch, we have the load distributor and the load generator connected to D-Link router that is then connected to the switch. 
 
 \subsection{Equipment}
-To measure results we use a combination of output from the system and measuring the power consumed by the system. To measure power usage we have a COITECH power consumption tool that is placed between the power outlet and our cluster.  
+To measure results we use a combination of output from the system and measuring the power consumed by the system. To measure power usage we have a COITECH power consumption tool that is placed between the power outlet and our cluster.
+
+\subsection{MacBook Pro control}
+When experimenting on the MacBook the load distributor will run locally and redirect to the loop-back interface. Since the MacBook got two physical cores, we will have the two instances of search program running simultaneous on different ports.  
 
 \subsection{Experiments}
 
 \subsubsection{Maximum throughput} 
-The objective of this test was of course to try pinpoint the maximum throughput our system can handle. In order to test this we use a load generator which creates random queries and send these at various interval to the cluster. The load generator is run on a computer outside the cluster. 
+The objective of this test was of course to try pinpoint the maximum throughput our system can handle. In order to test this we use a load generator which creates random queries and send these at various interval to the cluster. The load generator is run on a computer outside the cluster. The load generator has two modes. It can either use one thread to send messages to the load distributor, or several threads and send messages to the individual nodes. By using the latter approach we can simulate the load distribution being moved out to the client application. 
 
 \subsubsection{Required amount of nodes to deliver maximum throughput}
 Since the load distributor is a bottleneck in our system, it could be interesting to see how many workers we need to still be able to perform at maximum throughput. In this experiment we have a look at the CPU utilization of the workers while gradually reducing the amount of workers in the cluster.
 
+\subsubsection{Power usage}
+From similar work\cite{RPI_BEOWULF} we have read that the Raspberry PI will drain up to 15\% more power under heavy load. We will use a power measurement device usually used to measure the amount of power consumer electronics consume. 
+
 \subsection{Results}
 \subsubsection{Maximum throughput}
-From our results we see that the cluster can function under a load of up to around 6250 request per second. After this we start to see a linear increase in dropped packages as we increase the load. At this throughput the load distributor is running at around 90\% CPU utilization while the workers are only using about 10\%. This clearly shows that it is the load distributor that is a limiting factor to the system. The network adapter being USB-driven might be the reason for this bottleneck.
+When using the load distributor we see from our results that our system can handle around 8300 requests per second before starting to lose packets. When increasing the load after this point we see a dramatic increase in lost packets. 
 
-In order to improve the throughput we could move the load distribution into the load generator and use all the 8 nodes as workers.
+When skipping the load distributor and using only worker nodes we surprisingly see that it performs worse than with the load distributor. However it performs much better when we increase the load above 8300 requests per second, as the increase in dropped packets is slower. For comparison we see that at 16000 requests per second the system running with a load distributor is losing almost 90\% of a traffic, but the system running with only workers is still able to respond to 60\% of the requests. 
+
+When pushing the system to it's limit, we see that the load distributor is in fact the limiting factor, as the network adapter is USB-driven in consumes a lot of CPU-cycles. When pushing 8300 requests per second the load distributor is running at maximum capacity while the workers are running on around 80\%. We also see a clear difference in performance from a cold node in regards to one that has been servicing for a while. This is tied to having to read from disk into memory.
+
+\subsubsection{Required amount of nodes to deliver maximum throughput}
+When shutting down nodes one at the time and plotting performance at peak load we see an increase in dropped packets immediately. However we see that the cluster could run with 99\% of queries answered with 7 instead of 8 nodes and 97\% answered with 6. With less than 6 nodes the system performed a lot worse. 
+
+We see that the relationship with one load distributor and 7 working nodes works out quite well.
+
+\subsubsection{Power usage}
+Despite other researchers quoting an increase in power drainage up to 15\%\cite{}
+
+Despite having read that the Raspberry PIs would drain up to 15\% more energy under load, we were unable to have them drain more than 5\% more. The cluster runs idle at 22-23W and 23-24W under load. One limiting factor for us could be that the resolution on the measuring tool is not very high as it does not show decimals, and we do not know how rounding is handled.  
+
+
+
 
 \subsubsection{Python}
 Initial testing
