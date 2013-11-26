@@ -506,22 +506,19 @@ void startLocalServer(int given_port){
     free(strbuffer);
     close(sockfd);
 }
+int run_queries_from_file(char*);
 
 int main(int argc, char* argv[])
 {
+    printf("usage: %s [port] [query-file]\nMust set port if using query file, default: %d\n",
+         argv[0], CONFIG_PORT);
     build_dictionary("target/dictionary.txt");
     N = find_dict_entry("*")->occurences;
     printf("Docs in collection: %d\n", N);
     if(argc > 2) {
-
-        char* searchstr = strdup(argv[1]);
-        char* result = malloc(MAXOUTPUTSIZE);
-
         long long before = wall_clock_time();
 
-        doSearch(searchstr, result);
-
-        free(searchstr);
+        run_queries_from_file(argv[2]);
 
         long long after = wall_clock_time();
         long long el = after-before;
@@ -529,9 +526,6 @@ int main(int argc, char* argv[])
 
         printf("ELAPSED doSearch: %f s\n\n", mytime);
 
-        printf("%s", result);
-        free(result);
-        print_dictionary();
     } 
     else if (argc > 1)
     {
@@ -559,3 +553,26 @@ long long wall_clock_time()
 #endif
 }
 
+int run_queries_from_file(char* query_filename) {
+    char* result = malloc(MAXOUTPUTSIZE);
+
+    printf("trying to read queries from file: %s\n", query_filename);
+
+    char* linebuffer = malloc(MAXOUTPUTSIZE);
+    int counter = 0;
+    FILE* query_file = fopen(query_filename, "r");
+    if(query_file == NULL) {
+        printf("error opening query file, exiting\n");
+        return -1;
+    }
+
+    while(fgets(linebuffer, MAXOUTPUTSIZE-1, query_file)) {
+        doSearch(linebuffer, result);
+        counter++;
+    }
+    fclose(query_file);
+    free(linebuffer);
+    free(result);
+    printf("Ran %d queries.\n", counter);
+    return 0;
+}
