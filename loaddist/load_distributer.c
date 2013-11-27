@@ -111,7 +111,8 @@ void setup(){
 
         //printf("Sending message to node number %d: %s\n",node, node_address[node]);
         //printf("Message:\n%s\n", p.msg);
-        sendto(sockfd,&p,sizeof(p),0,(struct sockaddr *)&nodeaddr,sizeof(nodeaddr));
+        int contentlength = 4+2+strlen(p.msg)+1; //32bit ip, 16bit port + strlen and \0
+        sendto(sockfd,&p,contentlength,0,(struct sockaddr *)&nodeaddr,sizeof(nodeaddr));
     }
     close(sockfd);
 
