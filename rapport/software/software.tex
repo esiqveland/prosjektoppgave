@@ -2,7 +2,7 @@
 \section{Software}
 \subsection{OS}
 As the authors had most experience with Arch Linux and it's environment, we decided to go with the distribution provided by the Arch Linux for ARM project.
-The OS is distributed as a ISO image, which is written to the SD card using the UNIX disk utility dd:
+The OS is distributed as a ISO image, which is written to the SD card using the UNIX disk utility {\tt dd}:
 \begin{lstlisting}
 dd if=inputimage.iso of=/dev/outdisk bs=1M
 \end{lstlisting}
@@ -10,7 +10,7 @@ dd if=inputimage.iso of=/dev/outdisk bs=1M
 \subsection{Searching in general}
 Since a significant part of our project is related to searching, we find it reasonable to include a section on how a search engine works in general. The engine consists of two parts: the inverted index and the postings file. There are two parts to this: indexing and searching.\cite{IntroIR}
 
-When performing the indexing task, a loop runs over all the documents in the corpus. For every term encountered in a document, the token\footnote{A token what is left after preprocessing a term. This preprocessing usually includes stemming and removal of special characters.} is added to a dictionary and the document id is appended to the token's postings list. A counter is also kept along with the id to keep track of multiple occurences of the same token in the same document.
+When performing the indexing task, a loop runs over all the documents in the corpus. For every term encountered in a document, the token\footnote{A token what is left after preprocessing a term. This preprocessing usually includes stemming and removal of special characters.} is added to a dictionary and the document id is appended to the token's postings list. A counter is also kept along with the id to keep track of multiple occurrences of the same token in the same document.
 
 The result of this loop is a dictionary of all tokens encountered along with postings lists naming all the documents that contain each token. This dictionary is split into two parts: a postings file containing all the  postings lists written to disk in binary, and an inverted index containing the token, a pointer the token's corresponding postings list and the number of documents containing the token.
 
@@ -47,9 +47,9 @@ The toolkit also provides stop word lists and improved splicing of natural langu
 \subsection{Optimized C-port}
 In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds. We therefore decided to rewrite the program using C. This also proved both challenging and useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
 
-The program reads the dictionary structure into memory on startup. It provides O(1) lookup on query terms using the library {\tt uthash}.
+The program reads the dictionary structure into memory on startup. It provides O(1) lookup on query terms using the library {\tt uthash}\cite{uthash}.
 
-\begin{lstlisting}[style=customc,caption={Structure of a dictionary entry (term)}]
+\begin{lstlisting}[style=customc,captionpos=b,caption={Structure of a dictionary entry (term)}]
 typedef struct {
     char* term;
     uint32_t byte_offset;
@@ -60,7 +60,28 @@ typedef struct {
 } dictionary_entry;
 \end{lstlisting}
 \subsubsection{uthash}
+{\tt uthash} is a small library with a set of convenient preprocessor macros for creating and managing hash tables in C. 
+{\tt uthash} does constant time $$O(1)$$ lookups, inserts and deletes, and comes with a number of different hash functions in case your key domain is not well suited for the default hash function. 
+
 \subsubsection{Experiences}
 The first testings of the C-port showed significant improvements in delivery speed.
-It further confirmed that managing memory yourself is desirable for performance and can still be very important in an environment where resources are scarce.
+It further confirmed that managing memory yourself is desirable for performance, and is especially important in an environment where resources are scarce. 
+When blasting the searching code with queries, we quickly maxed out the available memory.
+These memory leaks were later fixed, and the program now experiences constant memory usage.
 
+For comparison between the two programs, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the pi, both for Python and {C}.
+
+\begin{table}[h]
+	\begin{center}
+	\begin{tabular}{|r|r|r|}
+	\hline
+	   & \multicolumn{1}{|c|}{PI}     & \multicolumn{1}{|c|}{MacBook} \\
+	\hline
+	C      & 84.748   & 4.782     \\
+	\hline
+	Python & 2046.768 & 49.411    \\
+	\hline
+	\end{tabular}
+	\caption{Runtimes for C and Python code on 100,000 queries.}
+	\end{center}
+\end{table}
