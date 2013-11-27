@@ -17,31 +17,7 @@ When comparing on the MacBook, the load generator is run on a Mac Mini and the s
 \subsection{Experiments phase 1}
 
 \subsubsection{Maximum throughput} 
-The objective of this test was of course to try pinpoint the maximum throughput our system can deliver. In order to test this we use a load generator which creates random queries and send these at various interval to the cluster. The load generator is run on a computer outside the cluster. 
-
-% \begin{table}[ht] 
-% \caption{Maximum throughput with load distributor} % title of Table 
-% \centering % used for centering table 
-% \begin{tabular}{c c} % centered columns (4 columns) 
-% \hline %inserts double horizontal lines 
-% Requests per second & Responses received \\ [0.5ex] % inserts table 
-% %heading 
-% \hline % inserts single horizontal line 
-% 7,662.84 & 39.81\% \\
-% 6,906.08 & 44.19\% \\
-% 6,337.14 & 63.32\% \\
-% 6,020.47 & 61.60\% \\
-% 5,221.93 & 77.80\% \\
-% 4,889.98 & 92.13\% \\
-% 4,642.53 & 95.68\% \\
-% 4,399.47 & 99.99\% \\
-% 4,149.38 & 99.97\% \\
-% 3,961.97 & 99.97\% \\
-% 3,792.19 & 100.00\% \\ [0.5ex] % [1ex] adds vertical space 
-% \hline %inserts single line 
-% \end{tabular} 
-% \label{table:nonlin} % is used to refer this t
-% \end{table}
+The objective of this test was of course to try pinpoint the maximum throughput our system can deliver. In order to test this we use a load generator which creates random queries and send these at various interval to the cluster. The load generator is run on a computer outside the cluster. The load generator sends queries at varying intervals in an attempt to identify the point where the system no longer can answer all queries.   
 
 \pgfplotstableread{../datasets/cluster_load_dir_requests.txt}\clusterloaddir
 \begin{table}
@@ -59,7 +35,9 @@ The objective of this test was of course to try pinpoint the maximum throughput 
 \label{tab:cluster_load_dir}
 \end{table}
 
-As we can see there is a clear drop in performance at around 4400 requests per second. If we increase the load from this point we see a drastic loss in received responses. At this rate the load distributor is running on close to 100\% CPU while the workers are running at around 80\%. So we have reason to believe that the load distributor is the node holding back the system. 
+
+
+It is apparent that there is a clear drop in performance at around 4400 requests per second. If we increase the load from this point we see a drastic loss in received responses. At this rate the load distributor is running on close to 100\% CPU while the workers are running at around 80\%. So we have reason to believe that the load distributor is the node holding back the system. 
 
 \subsubsection{Required amount of nodes to deliver maximum throughput}
 Since the load distributor appears to be a bottleneck in our system, it could be interesting to see how many workers we need to still be able to perform at maximum throughput. In this experiment we have a look at the CPU utilization of the workers while gradually reducing the amount of workers in the cluster.
@@ -145,7 +123,7 @@ From similar work\cite{RPI_BEOWULF} we have read that the Raspberry PI will drai
 \label{tab:wattpernode}
 \end{table}
 
-Despite having read that the Raspberry PIs would drain up to 15\% more energy under load, we were unable to have them drain more than 9\% more. The cluster runs idle at 22-23W and 23-24W under load. These measurements include the switch which consumes a constant 4W.
+Despite having read that the Raspberry PIs would drain up to 15\% more energy under load, we were unable to have them drain more than about 9\% more. The cluster runs idle at 22-23W and 23-24W under load. These measurements include the switch which consumes a constant 4W.
 
 One limiting factor for us could be that the resolution on the measuring tool is not very high as it does not show decimals, and we do not know how rounding is handled. 
 
@@ -166,7 +144,6 @@ ymin = 0
 \addplot table[y = watt] from \wattpernode ;
 \end{axis}
 \end{tikzpicture}
-
 
 
 
@@ -223,8 +200,6 @@ is only able to serve around half its requests, while the cluster is answering 9
 \subsection{Results}
 \subsubsection{Maximum throughput}
 When using the load distributor we see from our results that our system can handle around 4400 requests per second before starting to lose packets. When increasing the load after this point we see a dramatic increase in lost packets. At this load the load distributor is running on 
-
- 
 
 When pushing the system to it's limit, we see that the load distributor is in fact the limiting factor, as the network adapter is USB-driven in consumes a lot of CPU-cycles. When pushing 8300 requests per second the load distributor is running at maximum capacity while the workers are running on around 80\%. We also see a clear difference in performance from a cold node in regards to one that has been servicing for a while. This is tied to having to read from disk into memory.
 
