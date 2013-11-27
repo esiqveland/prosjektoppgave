@@ -1,0 +1,57 @@
+runtimes_search_C_port
+
+100k searches:
+
+-----------------------------------------------
+
+[king@pinode0 prosjektoppgave]$ ./bin/search_bin 32003 target/query_file.txt 
+usage: ./bin/search_bin [port] [query-file]
+Must set port if using query file, default: 32003
+Docs in collection: 7769
+trying to read queries from file: target/query_file.txt
+Ran 100000 queries.
+ELAPSED doSearch: 84.340263 s
+
+[king@pinode0 prosjektoppgave]$ ./bin/search_bin 32003 target/query_file.txt 
+usage: ./bin/search_bin [port] [query-file]
+Must set port if using query file, default: 32003
+Docs in collection: 7769
+trying to read queries from file: target/query_file.txt
+Ran 100000 queries.
+ELAPSED doSearch: 85.586815 s
+
+[king@pinode0 prosjektoppgave]$ ./bin/search_bin 32003 target/query_file.txt 
+usage: ./bin/search_bin [port] [query-file]
+Must set port if using query file, default: 32003
+Docs in collection: 7769
+trying to read queries from file: target/query_file.txt
+Ran 100000 queries.
+ELAPSED doSearch: 84.316788 s
+
+-----------------------------------------------
+
+84.340263
+85.586815
+84.316788
+
+=(84.340263 + 85.586815 + 84.316788)/3 = 84.747955
+
+AVG: 84.747955 over 3 runs
+so 84.748 roughly over 100k queries
+
+
+PYTHON:
+
+[king@pinode0 prosjektoppgave]$ python2.7 search/search.py -d target/dictionary.txt -p target/postings.txt -q target/query_file.txt  -m target/mapping.txt -o target/out
+target/dictionary.txt target/postings.txt target/query_file.txt target/out
+build_dict time:  3.25869488716
+search time: 2089.28803802
+
+-----------------------------------------------
+
+(2089.288+)/3
+
+AVG: over 3 runs
+roughly over 100k queries
+
+
