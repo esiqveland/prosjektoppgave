@@ -240,10 +240,10 @@ for query in queries:
     #print result
 
     finalResult = sorted(result, reverse = True)
-    print finalResult
-    for res in finalResult:
-        outfile.write("{} {}".format(res[0], res[1]))
-    outfile.write("\n")
+    #print finalResult
+    #for res in finalResult:
+    #    outfile.write("{} {}".format(res[0], res[1]))
+    #outfile.write("\n")
 
 
 postingsFile.close()
