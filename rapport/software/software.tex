@@ -69,7 +69,7 @@ It further confirmed that managing memory yourself is desirable for performance,
 When blasting the searching code with queries, we quickly maxed out the available memory.
 These memory leaks were later fixed, and the program now experiences constant memory usage.
 
-For comparison between the two programs, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the pi, both for Python and {C}.
+For comparison between the two programs, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the pi, both for Python and {C}. The results are given in Table \ref{tbl:runtimes_ports}.
 
 \begin{table}[h]
 	\begin{center}
@@ -83,5 +83,6 @@ For comparison between the two programs, we created a test set of 100,000 querie
 	\hline
 	\end{tabular}
 	\caption{Runtimes for C and Python code on 100,000 queries.}
+	\label{tbl:runtimes_ports}
 	\end{center}
 \end{table}
