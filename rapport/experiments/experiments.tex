@@ -9,27 +9,222 @@ In this section we experiment with the cluster to see how it performs and compar
 The setup is the cluster of 8 PI-nodes. Since we are limited by the 8 ports on our switch, we have the load distributor and the load generator connected to D-Link router that is then connected to the switch. 
 
 \subsection{Equipment}
-To measure results we use a combination of output from the system and measuring the power consumed by the system. To measure power usage we have a COITECH power consumption tool that is placed between the power outlet and our cluster.
+To measure results we use a combination of output from the system and measuring the power consumed by the system. To measure power usage we have a COITECH power consumption tool that is placed between the power outlet and our cluster that lets us read the current power consumption.
 
 \subsection{MacBook Pro control}
-When experimenting on the MacBook the load distributor will run locally and redirect to the loop-back interface. Since the MacBook got two physical cores, we will have the two instances of search program running simultaneous on different ports.  
+When comparing on the MacBook, the load generator is run on a Mac Mini and the search program is run, either in one instance to test single core performance, or in two instances to utilize both the cores. When running two instances these two operate on different ports.  
 
-\subsection{Experiments}
+\subsection{Experiments phase 1}
 
 \subsubsection{Maximum throughput} 
-The objective of this test was of course to try pinpoint the maximum throughput our system can handle. In order to test this we use a load generator which creates random queries and send these at various interval to the cluster. The load generator is run on a computer outside the cluster. The load generator has two modes. It can either use one thread to send messages to the load distributor, or several threads and send messages to the individual nodes. By using the latter approach we can simulate the load distribution being moved out to the client application. 
+The objective of this test was of course to try pinpoint the maximum throughput our system can deliver. In order to test this we use a load generator which creates random queries and send these at various interval to the cluster. The load generator is run on a computer outside the cluster. 
+
+% \begin{table}[ht] 
+% \caption{Maximum throughput with load distributor} % title of Table 
+% \centering % used for centering table 
+% \begin{tabular}{c c} % centered columns (4 columns) 
+% \hline %inserts double horizontal lines 
+% Requests per second & Responses received \\ [0.5ex] % inserts table 
+% %heading 
+% \hline % inserts single horizontal line 
+% 7,662.84 & 39.81\% \\
+% 6,906.08 & 44.19\% \\
+% 6,337.14 & 63.32\% \\
+% 6,020.47 & 61.60\% \\
+% 5,221.93 & 77.80\% \\
+% 4,889.98 & 92.13\% \\
+% 4,642.53 & 95.68\% \\
+% 4,399.47 & 99.99\% \\
+% 4,149.38 & 99.97\% \\
+% 3,961.97 & 99.97\% \\
+% 3,792.19 & 100.00\% \\ [0.5ex] % [1ex] adds vertical space 
+% \hline %inserts single line 
+% \end{tabular} 
+% \label{table:nonlin} % is used to refer this t
+% \end{table}
+
+\pgfplotstableread{../datasets/cluster_load_dir_requests.txt}\clusterloaddir
+\begin{table}
+	\centering
+	\caption{Maximum throughput with load distributor}
+	\pgfplotstabletypeset[
+     	columns={requests, received},
+     	every head row/.style={before row=\hline,
+     	after row=\hline},
+		every last row/.style={after row=\hline},
+		columns/requests/.style={column name=Requests per second},
+		columns/received/.style={column name=\% queries served},
+     	]
+    {\clusterloaddir}
+\label{tab:cluster_load_dir}
+\end{table}
+
+As we can see there is a clear drop in performance at around 4400 requests per second. If we increase the load from this point we see a drastic loss in received responses. At this rate the load distributor is running on close to 100\% CPU while the workers are running at around 80\%. So we have reason to believe that the load distributor is the node holding back the system. 
 
 \subsubsection{Required amount of nodes to deliver maximum throughput}
-Since the load distributor is a bottleneck in our system, it could be interesting to see how many workers we need to still be able to perform at maximum throughput. In this experiment we have a look at the CPU utilization of the workers while gradually reducing the amount of workers in the cluster.
+Since the load distributor appears to be a bottleneck in our system, it could be interesting to see how many workers we need to still be able to perform at maximum throughput. In this experiment we have a look at the CPU utilization of the workers while gradually reducing the amount of workers in the cluster.
+
+% \begin{table}[ht] 
+% \caption{Performance when reducing working nodes} % title of Table 
+% \centering % used for centering table 
+% \begin{tabular}{c c} % centered columns (4 columns) 
+% \hline %inserts double horizontal lines 
+% Active working nodes & Responses received \\ [0.5ex] % inserts table 
+% %heading 
+% \hline % inserts single horizontal line 
+% 7 & 99.99\% \\
+% 6 & 99.72\% \\ 
+% 5 & 97.26\% \\ 
+% 4 & 78.20\% \\
+% 3 & 56.22\% \\
+% 2 & 34.23\% \\
+% 1 & 11.72\% \\[0.5ex] % [1ex] adds vertical space 
+% \hline %inserts single line 
+% \end{tabular} 
+% \label{table:nonlin} % is used to refer this t
+% \end{table}
+
+\pgfplotstableread{../datasets/cluster_reduced_workers_at_full_load.txt}\clusterreduced
+\begin{table}
+	\centering
+	\caption{Performance when reducing working nodes}
+	\pgfplotstabletypeset[
+     	columns={workers, received},
+     	every head row/.style={before row=\hline,
+     	after row=\hline},
+		every last row/.style={after row=\hline},
+		columns/workers/.style={column name=Active working nodes},
+		columns/received/.style={column name=\% queries served},
+     	]
+    {\clusterreduced}
+\label{tab:clusterreduced}
+\end{table}
+
+
+When shutting down nodes one at the time and plotting performance at peak load we see an increase in dropped packets immediately. However we see that the cluster could run with 99.7\% of queries answered with 7 instead of 8 nodes and 97.3\% answered with 6. With less than 6 nodes the system performed a lot worse. 
+
+We are quite happy with these results as they show that the work distribution is relatively even. If we only needed a few nodes to be able handle the maximum throughput from the load distributor, then we would be no need for 8 nodes in the cluster. 
 
 \subsubsection{Power usage}
-From similar work\cite{RPI_BEOWULF} we have read that the Raspberry PI will drain up to 15\% more power under heavy load. We will use a power measurement device usually used to measure the amount of power consumer electronics consume. 
+From similar work\cite{RPI_BEOWULF} we have read that the Raspberry PI will drain up to 15\% more power under heavy load. We will use a power measurement device, usually used to measure the amount of power consumer electronics consume, to see how our cluster behaves under load.
+
+% \begin{table}[ht] 
+% \caption{Watts per node} % title of Table 
+% \centering % used for centering table 
+% \begin{tabular}{c c} % centered columns (4 columns) 
+% \hline %inserts double horizontal lines 
+% Active nodes & Watts \\ [0.5ex] % inserts table 
+% %heading 
+% \hline % inserts single horizontal line 
+% 1 & 6W \\
+% 2 & 8W \\ 
+% 3 & 11W \\
+% 4 & 13W \\
+% 5 & 16W \\
+% 6 & 19W \\ 
+% 7 & 21W \\
+% 8 & 24W \\[0.5ex] % [1ex] adds vertical space 
+% \hline %inserts single line 
+% \end{tabular} 
+% \label{table:nonlin} % is used to refer this t
+% \end{table}
+
+\pgfplotstableread{../datasets/watt_per_node.txt}\wattpernode
+\begin{table}
+	\centering
+	\caption{Watts per node}
+	\pgfplotstabletypeset[
+     	columns={nodes, watt},
+     	every head row/.style={before row=\hline,
+     	after row=\hline},
+		every last row/.style={after row=\hline},
+		columns/nodes/.style={column name=Active Nodes},
+		columns/watt/.style={column name=Watt},
+     	]
+    {\wattpernode}
+\label{tab:wattpernode}
+\end{table}
+
+Despite having read that the Raspberry PIs would drain up to 15\% more energy under load, we were unable to have them drain more than 9\% more. The cluster runs idle at 22-23W and 23-24W under load. These measurements include the switch which consumes a constant 4W.
+
+One limiting factor for us could be that the resolution on the measuring tool is not very high as it does not show decimals, and we do not know how rounding is handled. 
+
+\begin{tikzpicture}
+\pgfplotstableread{../datasets/watt_per_node.txt}
+\wattpernode
+
+
+\begin{axis}
+[
+xlabel = active nodes,
+xmax = 10,
+xmin = 0,
+ylabel = consumption\,/\,W,
+ymax = 30,
+ymin = 0
+]
+\addplot table[y = watt] from \wattpernode ;
+\end{axis}
+\end{tikzpicture}
+
+
+
+
+
+\subsubsection{Maximum throughput phase 2} 
+As we identified the load distributor as the bottleneck in our system we decided to move the load distribution out into the load generator. This would simulate the load balancing being moved out to the client application. This would also free up one additional node for working. This was implemented by having one thread for each node in the cluster sending queries. 
+
+% \begin{table}[ht] 
+% \caption{Maximum throughput without load distributor} % title of Table 
+% \centering % used for centering table 
+% \begin{tabular}{c c} % centered columns (4 columns) 
+% \hline %inserts double horizontal lines 
+% Requests per second & Responses received \\ [0.5ex] % inserts table 
+% %heading 
+% \hline % inserts single horizontal line 
+% 10,144.25 & 67.16\% \\
+% 9,115.15 & 76.74\% \\
+% 8,199.77 & 87.20\% \\
+% 7,447.42 & 94.06\% \\
+% 6,770.08 & 98.12\% \\
+% 6,271.23 & 98.76\% \\
+% 5,776.78 & 99.68\% \\
+% 5,382.28 & 99.92\% \\
+% 5,007.12 & 99.96\% \\
+% 4,684.13 & 100.00\% \\
+% 4,391.88 & 99.98\% \\ [0.5ex] % [1ex] adds vertical space 
+% \hline %inserts single line 
+% \end{tabular} 
+% \label{table:nonlin} % is used to refer this t
+% \end{table}
+
+\pgfplotstableread{../datasets/cluster_only_workers_requests.txt}\clusteronlyworkers
+\begin{table}
+	\centering
+	\caption{Maximum throughput without load distributor}
+	\pgfplotstabletypeset[
+     	columns={requests, received},
+     	every head row/.style={before row=\hline,
+     	after row=\hline},
+		every last row/.style={after row=\hline},
+		columns/requests/.style={column name=Requests per second},
+		columns/received/.style={column name=\% queries served},
+     	]
+    {\clusteronlyworkers}
+\label{tab:cluster_only_workers}
+\end{table}
+
+When skipping the load distributor and using only worker nodes we see that it performs better. There is an increase in maximum performance but we also see that it behaves a lot better under higher loads. If we compare the two methods we see that at around 6800 requests per second the load balancer 
+is only able to serve around half its requests, while the cluster is answering 98\% of the requests without the load distributor.   
+
+
+
 
 \subsection{Results}
 \subsubsection{Maximum throughput}
-When using the load distributor we see from our results that our system can handle around 8300 requests per second before starting to lose packets. When increasing the load after this point we see a dramatic increase in lost packets. 
+When using the load distributor we see from our results that our system can handle around 4400 requests per second before starting to lose packets. When increasing the load after this point we see a dramatic increase in lost packets. At this load the load distributor is running on 
 
-When skipping the load distributor and using only worker nodes we surprisingly see that it performs worse than with the load distributor. However it performs much better when we increase the load above 8300 requests per second, as the increase in dropped packets is slower. For comparison we see that at 16000 requests per second the system running with a load distributor is losing almost 90\% of a traffic, but the system running with only workers is still able to respond to 60\% of the requests. 
+ 
 
 When pushing the system to it's limit, we see that the load distributor is in fact the limiting factor, as the network adapter is USB-driven in consumes a lot of CPU-cycles. When pushing 8300 requests per second the load distributor is running at maximum capacity while the workers are running on around 80\%. We also see a clear difference in performance from a cold node in regards to one that has been servicing for a while. This is tied to having to read from disk into memory.
 
@@ -39,10 +234,6 @@ When shutting down nodes one at the time and plotting performance at peak load w
 We see that the relationship with one load distributor and 7 working nodes works out quite well.
 
 \subsubsection{Power usage}
-Despite other researchers quoting an increase in power drainage up to 15\%\cite{}
-
-Despite having read that the Raspberry PIs would drain up to 15\% more energy under load, we were unable to have them drain more than 5\% more. The cluster runs idle at 22-23W and 23-24W under load. One limiting factor for us could be that the resolution on the measuring tool is not very high as it does not show decimals, and we do not know how rounding is handled.  
-
 
 
 
@@ -52,4 +243,5 @@ Initial testing
 \subsubsection{C-Port}
 Initial testing
 \subsection{Mac vs PI}
+text
 
