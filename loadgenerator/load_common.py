@@ -127,7 +127,8 @@ class Connection:
             time.sleep(sleeptime)
             msg = self.generateMessage()
             if self.target_port % 32000 == 3:
-                msg = struct.pack("=4sH1024s", socket.inet_aton(self.ip), socket.htons(self.port), msg)
+                contentlen = len(msg)+1
+                msg = struct.pack("=4sH{}s".format(contentlen), socket.inet_aton(self.ip), socket.htons(self.port), msg)
             self.socket.sendto(msg, addrTuple)
             counts -= 1
         print "Done!"
