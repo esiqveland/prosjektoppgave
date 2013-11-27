@@ -59,17 +59,6 @@ def lookUpName(fileId):
     else:
         return 0
 
-def lookUpIPC(fileId):
-    global mappingDict
-
-    if mappingDict == None:
-        tempFile = open(mapping_file)
-        mappingDict = pickle.load(tempFile)
-
-    if fileId in mappingDict:
-        return mappingDict[fileId][1]
-    else:
-        return 0
 
 # Returns a string of the elements in the list
 def listToString(list):
@@ -89,7 +78,8 @@ def build_dictionary():
     dictionary = {}
     for line in lines:
         entry = line.split()
-        dictionary[entry[0]] = (int(entry[1]),int(entry[2]),int(entry[3]))
+        #dictionary[entry[0]] = (int(entry[1]),int(entry[2]),int(entry[3]))
+        dictionary[entry[0]] = (int(entry[1]),int(entry[2]))
     f.close()
     return dictionary
 
@@ -100,7 +90,7 @@ def search(query, index):
 
     # remove duplicates and generate a counterList of the query terms
     query, queryCounter = uniqueAndCounterList(query)
-    print "Searching for query: ", query
+    #print "Searching for query: ", query
 
     # Create the document -> freqList structure used from now on
     documents = {}
@@ -188,7 +178,6 @@ def search(query, index):
     # Sort results
     endScore = sorted(endScore,reverse=False,key=operator.itemgetter(1))
     endScore = sorted(endScore,reverse=True,key=operator.itemgetter(0))
-    lengthTemp = len(endScore)
 
     return endScore
 
@@ -233,21 +222,28 @@ mappingDict = None
 
 # Open input/output files
 postingsFile = open(input_file_p,'rb')
+outfile = open(output_file, "w")
 
 # Start handling query
 title = None
 # Read out title and description from query xml
-with open(input_file_q) as myfile:
-    title = myfile.readline()
-
 starttime = time.time()
 
-query = parseQuery(title)
-print query
-result = search(query,1)
-print result
+queries = []
+with open(input_file_q, "r") as myfile:
+    queries = myfile.readlines()
 
-finalResult = sorted(result, reverse = True)
+for query in queries:
+    #query = parseQuery(title)
+    #print query
+    result = search(query.split(),1)
+    #print result
+
+    finalResult = sorted(result, reverse = True)
+    print finalResult
+    for res in finalResult:
+        outfile.write("{} {}".format(res[0], res[1]))
+    outfile.write("\n")
 
 
 postingsFile.close()
