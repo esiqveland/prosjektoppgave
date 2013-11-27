@@ -47,11 +47,20 @@ target/dictionary.txt target/postings.txt target/query_file.txt target/out
 build_dict time:  3.25869488716
 search time: 2089.28803802
 
+[king@pinode0 prosjektoppgave]$ python2.7 search/search.py -d target/dictionary.txt -p target/postings.txt -q target/query_file.txt  -m target/mapping.txt -o target/out
+target/dictionary.txt target/postings.txt target/query_file.txt target/out
+build_dict time:  3.3734099865
+search time: 2046.63895488
+
 -----------------------------------------------
 
-(2089.288+)/3
+(2089.288+2046.638+)/3
 
 AVG: over 3 runs
 roughly over 100k queries
+
+,{PI},{MacBook}
+C,84.748,4.782
+Python,2046.768,49.411
 
 
