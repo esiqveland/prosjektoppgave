@@ -39,7 +39,7 @@ The postings entries are a list of tuples, in the format $$<docID, count>$$, giv
 \subsection{Document scoring}
 In the searching step one is usually working with a query containing one or more terms. For each token the corresponding postings list is fetched from disk (and cached). Each document is then scored according to a scoring scheme and a list of the documents sorted by the score is returned to the application.
 
-To provide a rudimentary form of scoring, we have implemented the TF-IDF scoring system for queries. We are using the weighting scheme suggested by Introduction to Information Retrieval\cite{IntroIR}, {\tt lnc.ltc} in SMART notation\cite{tfidf_smart}.
+To provide a rudimentary form of scoring, we have implemented the TF-IDF scoring system for queries. We are using the weighting scheme suggested by Introduction to Information Retrieval\cite{IntroIR}, {\tt lnc.ltc} in SMART notation\cite{tfidfsmart}.
 
 
 \subsection{Operating system and environment} % TODO: remove this?
@@ -74,7 +74,6 @@ typedef struct {
     char* term;
     uint32_t byte_offset;
     uint32_t occurences;
-    uint32_t occurences_abstract;
     postings_entry* posting;
     UT_hash_handle hhd;         /* makes this structure hashable */
 } dictionary_entry;
