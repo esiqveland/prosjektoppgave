@@ -10,22 +10,40 @@ dd if=inputimage.iso of=/dev/outdisk bs=1M
 \end{lstlisting}
 
 \subsection{Searching in general}
-Since a significant part of our project is related to searching, we find it reasonable to include a section on how a search engine works in general. The engine consists of two parts: the inverted index and the postings file. There are two parts to this: indexing and searching.\cite{IntroIR}
+Since a significant part of our project is related to searching, we find it reasonable to include a section on how a search engine works in general. 
 
-When performing the indexing task, a loop runs over all the documents in the corpus. For every term encountered in a document, the token\footnote{A token what is left after preprocessing a term. This preprocessing usually includes stemming and removal of special characters.} is added to a dictionary and the document id is appended to the token's postings list. A counter is also kept along with the id to keep track of multiple occurrences of the same token in the same document.
+Our engine consist of two parts: indexing and searching. 
+The search engine executes and scores a set of documents for given queries. For this work, it uses the dictionary, and a postings file.
+The other part is the indexer, which builds an inverted index, the dictionary, and the postings file\cite{IntroIR} over a collection of documents (corpus).
 
-The result of this loop is a dictionary of all tokens encountered along with postings lists naming all the documents that contain each token. This dictionary is split into two parts: a postings file containing all the  postings lists written to disk in binary, and an inverted index containing the token, a pointer the token's corresponding postings list and the number of documents containing the token.
+When performing the indexing task, a loop runs over every document in the corpus. 
+For every word encountered in a document, the indexer emits a term, which is made into a token. 
+A token what is left after post-processing a term. This processing usually includes stemming and removal of special characters. 
+The token is added to a dictionary and the document id is appended to the token's postings list. A counter is also kept along with the id to keep track of multiple occurrences of the same token in the same document.
+The result of this loop is a dictionary of all unique tokens encountered, along with a postings list, naming all the documents that contain each token.
+
+The dictionary contains the token, how many times it occurs in the collection, and a pointer to where this term is stored in the postings file.
+The entries can be viewed as a tuple of the format:
+$$<token, count, pointer>$$
+The postings pointer is in our case an integer. This integer is the byte offset in the posting file where this terms posting list starts.
+
+The postings entries are a list of tuples, in the format $$<docID, count>$$, giving the document id where the token occurred and the number of times it was seen in that document.
 
 \begin{figure}[h]
     \includegraphics[width=0.5\textwidth]{software/index_postings_lists}
+    \center
     \caption{A sample index and postings list.\cite{IntroIR}}
     \label{fig:index_postings_lists_sw}
 \end{figure}
 
-In the searching step one is usually working with a query containing one or more terms. For each token the corresponding postings list is fetched from disk. Each document is then scored according to a scoring scheme and a list of the documents sorted by the score is returned to the application.
+\subsection{Document scoring}
+In the searching step one is usually working with a query containing one or more terms. For each token the corresponding postings list is fetched from disk (and cached). Each document is then scored according to a scoring scheme and a list of the documents sorted by the score is returned to the application.
+
+To provide a rudimentary form of scoring, we have implemented the TF-IDF scoring system for queries. We are using the weighting scheme suggested by Introduction to Information Retrieval\cite{IntroIR}, {\tt lnc.ltc} in SMART notation\cite{tfidf_smart}.
 
 
-\subsection{Operating system and environment}
+\subsection{Operating system and environment} % TODO: remove this?
+
 \subsection{Load generator}
 The purpose of the load generator is to generate pseudo-random queries and send these to the load distributor to simulate load on the cluster. These queries are of varying length and contains a subset of the tokens found in the dictionary. It also includes some tokens not found in the dictionary.
 
@@ -40,16 +58,16 @@ The messages from the load distributor to the worker nodes includes information 
 This scheme is simple, but could also prove to be a bottleneck of the system. Seeing as all communication has to go through this node we could end up with the performance of the cluster being limited by the load distributor.
 
 \subsection{Original python version}
-The python version we were basing the program on relied heavily upon the python based Natural Language Toolkit\cite{nltk} (NLTK).
+The python version we were basing the program on relied heavily upon the python library Natural Language Toolkit\cite{nltk} (NLTK).
 NLTK provides a lot of useful methods for processing natural languages in Python, including different tools for stemming and other tokenization tricks.
 Stemming is the process of reducing inflected or conjugated words into their basic or root form. Examples include removal of prefixes, suffixes, tense and vowel changes. I.e. words like ``fishing'', ``fisher'' and ``fished'' all end up mapping to the same stem ``fish''.
 
-The toolkit also provides stop word lists and improved splicing of natural language sentences. As this is a lot of work to implement, we have chosen to do indexing in python and deliver and calculate search results based only on the stemmed forms.
+The toolkit also provides stop word lists and improved splicing of natural language sentences. As this is a lot of work to implement, we have chosen to do indexing in python and deliver and calculate search results based only on the stemmed forms for the C program.
 
 \subsection{Optimized C-port}
-In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds. We therefore decided to rewrite the program using C. This also proved both challenging and useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
+In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds. We therefore decided to rewrite the program using C. This proved it both challenging and useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
 
-The program reads the dictionary structure into memory on startup. It provides O(1) lookup on query terms using the library {\tt uthash}\cite{uthash}.
+The program reads the dictionary structure into memory on startup. It provides O(1) lookup on query terms in a hash map, using the library {\tt uthash}\cite{uthash}.
 
 \begin{lstlisting}[style=customc,captionpos=b,caption={Structure of a dictionary entry (term)}]
 typedef struct {
@@ -69,10 +87,12 @@ typedef struct {
 The first testings of the C-port showed significant improvements in delivery speed.
 It further confirmed that managing memory yourself is desirable for performance, and is especially important in an environment where resources are scarce. 
 When blasting the searching code with queries, we quickly maxed out the available memory.
-These memory leaks were later fixed, and the program now experiences constant memory usage.
+These memory leaks were later fixed, and the program now experiences constant memory usage. The difference in developing platform, compared to the ARMv6 runtime environment did not impose any extra difficulties, except for a single case of some odd pointer behavior.
+The rest of the time, the code behaved as expected from one platform to the other.
 
-For comparison between the two programs, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the pi, both for Python and {C}. 
+For comparison between the two languages, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the pi, both for Python and {C}. 
 The results are given in Table \ref{tbl:runtimes_ports}. 
+
 For the relatively quick {Core i5}, the python code need 10 times longer to run the queries than the C code, and seem reasonable compared to known sources.
 The Python code is however detrimental to the performance for the weaker PI. The same 100,000 queries takes 84 seconds to run in C, but takes 24 times longer in python.
 
