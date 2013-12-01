@@ -42,7 +42,26 @@ In the searching step one is usually working with a query containing one or more
 To provide a rudimentary form of scoring, we have implemented the TF-IDF scoring system for queries. We are using the weighting scheme suggested by Introduction to Information Retrieval\cite{IntroIR}, {\tt lnc.ltc} in SMART notation\cite{tfidfsmart}.
 
 
-\subsection{Operating system and environment} % TODO: remove this?
+\subsection{Operating system and environment}
+Our operating system of choice is the Arch Linux for ARM project\cite{archarm}. This distribution provides us with a rolling release scheme, and eases development through the big and developer friendly package system AUR. If something is missing, it can be a lot easier to add it to all of the systems through the package manager.
+
+The systems were mostly running on Linux kernel 3.6.11-18-ARCH, compiled for armv6l. This is as reported by running {\tt uname -a} on the target platform.
+
+The systems also had the raspberrypi-firmware-tools packages, dated 20131021-1. Compilation was done with gcc:
+\begin{lstlisting}[captionpos=b,caption={Output of {\tt gcc -v} and {\tt python --version}}]
+$ gcc -v
+Using built-in specs.
+COLLECT_GCC=gcc
+COLLECT_LTO_WRAPPER=/usr/lib/gcc/armv6l-unknown-linux-gnueabihf/4.7.2/lto-wrapper
+Target: armv6l-unknown-linux-gnueabihf
+Configured with: /build/src/gcc-4.7.2/configure --prefix=/usr --libdir=/usr/lib --libexecdir=/usr/lib --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=https://bugs.archlinux.org/ --enable-languages=c,c++,fortran,lto,objc,obj-c++ --enable-shared --enable-threads=posix --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-clocale=gnu --disable-libstdcxx-pch --enable-libstdcxx-time --enable-gnu-unique-object --enable-linker-build-id --with-ppl --enable-cloog-backend=isl --disable-ppl-version-check --disable-cloog-version-check --enable-lto --enable-gold --enable-ld=default --enable-plugin --with-plugin-ld=ld.gold --with-linker-hash-style=gnu --disable-multilib --disable-libssp --disable-build-with-cxx --disable-build-poststage1-with-cxx --enable-checking=release --host=armv6l-unknown-linux-gnueabihf --build=armv6l-unknown-linux-gnueabihf --with-arch=armv6 --with-float=hard --with-fpu=vfp
+Thread model: posix
+gcc version 4.7.2 (GCC) 
+
+$ python --version
+Python 2.7.5
+\end{lstlisting}
+
 
 \subsection{Load generator}
 The purpose of the load generator is to generate pseudo-random queries and send these to the load distributor to simulate load on the cluster. These queries are of varying length and contains a subset of the tokens found in the dictionary. It also includes some tokens not found in the dictionary.
@@ -86,8 +105,10 @@ typedef struct {
 The first testings of the C-port showed significant improvements in delivery speed.
 It further confirmed that managing memory yourself is desirable for performance, and is especially important in an environment where resources are scarce. 
 When blasting the searching code with queries, we quickly maxed out the available memory.
-These memory leaks were later fixed, and the program now experiences constant memory usage. The difference in developing platform, compared to the ARMv6 runtime environment did not impose any extra difficulties, except for a single case of some odd pointer behavior.
-The rest of the time, the code behaved as expected from one platform to the other.
+These memory leaks were later fixed, and the program now experiences constant memory usage. 
+
+The difference in developing platform, with x86\_64 Darwin compared to the ARMv6 runtime environment did not impose any extra difficulties, except for a single case of some odd pointer behavior.
+The rest of the time, the code behaved as expected from one platform to the other, for both Python and C.
 
 For comparison between the two languages, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the pi, both for Python and {C}. 
 The results are given in Table \ref{tbl:runtimes_ports}. 
