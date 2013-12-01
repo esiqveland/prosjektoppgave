@@ -1,5 +1,7 @@
 \clearpage
 \section{Software}
+\label{sec:software}
+
 \subsection{OS}
 As the authors had most experience with Arch Linux and it's environment, we decided to go with the distribution provided by the Arch Linux for ARM project.
 The OS is distributed as a ISO image, which is written to the SD card using the UNIX disk utility {\tt dd}:
@@ -69,7 +71,10 @@ It further confirmed that managing memory yourself is desirable for performance,
 When blasting the searching code with queries, we quickly maxed out the available memory.
 These memory leaks were later fixed, and the program now experiences constant memory usage.
 
-For comparison between the two programs, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the pi, both for Python and {C}. The results are given in Table \ref{tbl:runtimes_ports}.
+For comparison between the two programs, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the pi, both for Python and {C}. 
+The results are given in Table \ref{tbl:runtimes_ports}. 
+For the relatively quick {Core i5}, the python code need 10 times longer to run the queries than the C code, and seem reasonable compared to known sources.
+The Python code is however detrimental to the performance for the weaker PI. The same 100,000 queries takes 84 seconds to run in C, but takes 24 times longer in python.
 
 \begin{table}[h]
 	\begin{center}
@@ -82,7 +87,7 @@ For comparison between the two programs, we created a test set of 100,000 querie
 	Python & 2046.768 & 49.411    \\
 	\hline
 	\end{tabular}
-	\caption{Runtimes for C and Python code on 100,000 queries.}
+	\caption{Runtimes (in seconds) for C and Python code on 100,000 queries.}
 	\label{tbl:runtimes_ports}
 	\end{center}
 \end{table}
