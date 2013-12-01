@@ -30,8 +30,8 @@ The postings pointer is in our case an integer. This integer is the byte offset 
 The postings entries are a list of tuples, in the format $$<docID, count>$$, giving the document id where the token occurred and the number of times it was seen in that document.
 
 \begin{figure}[h]
-    \includegraphics[width=0.5\textwidth]{software/index_postings_lists}
     \center
+    \includegraphics[width=0.5\textwidth]{software/index_postings_lists}
     \caption{A sample index and postings list.\cite{IntroIR}}
     \label{fig:index_postings_lists_sw}
 \end{figure}
@@ -62,6 +62,58 @@ $ python --version
 Python 2.7.5
 \end{lstlisting}
 
+\subsection{Booting and deployment}
+To collaborate and distribute our code, we use a git repository stored at GitHub. We also agreed upon a set folder structure to make it easier to maintain and deploy our code.
+
+We created a systemd script that runs at boot, which does a repository pull and builds all the code, then run it. So to deploy a new update, we would cut the power to the rig and start it again. 
+This proved very efficient in practice and saved us a lot of work manually, or by scripts, logging in and updating and relaunching each system. The boot script is given in listing \ref{lst:bootscript}.
+\begin{lstlisting}[captionpos=b,caption={Our Systemd boot script. It launches a script that makes sure datetime is set before launching the update script.},label={lst:bootscript}]
+#-/etc/systemd/system/pinode.service
+[Unit]
+Description=PI search service
+ConditionPathExists=/etc/rc.local
+
+[Service]
+Type=forking
+ExecStart=/etc/rc.local
+TimeoutSec=0
+StandardOutput=tty
+RemainAfterExit=yes
+SysVStartPriority=99
+
+[Install]
+WantedBy=multi-user.target
+
+#-/etc/rc.local
+su king -c "/home/king/src/prosjektoppgave/boot_pinode.py" 
+
+#-boot_pinode.py
+projectdir = "/home/king/src/prosjektoppgave"
+hostname = socket.gethostname()
+
+os.chdir(projectdir)
+
+def update_git():
+    subprocess.call(["git", "pull"])
+    subprocess.call(["make"])
+
+def launch_load_distr():  
+    subprocess.call(["bin/load_distributor_bin"])
+    pass
+
+def launch_search_engine():
+    subprocess.call(["bin/search_bin"])
+    pass
+
+while True:
+    update_git()
+
+    if hostname[len(hostname)-1] == '0':
+        launch_load_distr()
+    else:
+        launch_search_engine()
+
+\end{lstlisting}
 
 \subsection{Load generator}
 The purpose of the load generator is to generate pseudo-random queries and send these to the load distributor to simulate load on the cluster. These queries are of varying length and contains a subset of the tokens found in the dictionary. It also includes some tokens not found in the dictionary.
@@ -127,7 +179,7 @@ The Python code is however detrimental to the performance for the weaker PI. The
 	Python & 2046.768 & 49.411    \\
 	\hline
 	\end{tabular}
-	\caption{Runtimes (in seconds) for C and Python code on 100,000 queries.}
+	\caption{Runtime (in seconds) for C and Python code on 100,000 queries.}
 	\label{tbl:runtimes_ports}
 	\end{center}
 \end{table}
