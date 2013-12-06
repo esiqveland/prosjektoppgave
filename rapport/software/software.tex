@@ -1,15 +1,27 @@
 \clearpage
 \section{Software}
 \label{sec:software}
+For this project, we needed quite a bit a software to be sure we had somewhat realistic workloads. 
+We also thought it important with predictability and put a lot of effort towards having a controlled environment. This goes for both the software and hardware involved.
 
-\subsection{OS}
+Having done a bit of performance analysis before, we are aware of how difficult it can be to get meaningful and consistent results when analyzing programs and hardware interactions. We therefore decided to base ourselves on using some code we had written earlier in a information retrieval course. It is a simple search engine and indexer written in python, that does full text searches on a indexed corpus.
+
+\subsection{Alternatives}
+There are a few open source projects already that are focused on information retrieval. We will here discuss some of the software we were considering using for this project.
+
+The most obvious software alternative might be Lucene, but it is a heavier search engine that also requires a JVM. Additionally it is not a project and codebase we are familiar with.
+This fact alone would make it hard for us to modify Lucene to our needs and be sure we got it right, and keep the level of control we wish for. The limited amount of less than 500MB of RAM was also a concern of ours when we were discussing Lucene.
+
+Another project is the Sphinx search engine\cite{sphinx}, but this also seems like overkill for our intents and purposes.
+
+\subsection{Setup}
 As the authors had most experience with Arch Linux and it's environment, we decided to go with the distribution provided by the Arch Linux for ARM project.
 The OS is distributed as a ISO image, which is written to the SD card using the UNIX disk utility {\tt dd}:
 \begin{lstlisting}
 dd if=inputimage.iso of=/dev/outdisk bs=1M
 \end{lstlisting}
 
-\subsection{Searching in general}
+\subsection{Doing a search}
 Since a significant part of our project is related to searching, we find it reasonable to include a section on how a search engine works in general. 
 
 Our engine consist of two parts: indexing and searching. 
@@ -32,7 +44,7 @@ The postings entries are a list of tuples, in the format $$<docID, count>$$, giv
 \begin{figure}[h]
     \center
     \includegraphics[width=0.5\textwidth]{software/index_postings_lists}
-    \caption{A sample index and postings list.\cite{IntroIR}}
+    \caption{A sample index and postings list. Figure taken from Introduction to IR\cite{IntroIR}.}
     \label{fig:index_postings_lists_sw}
 \end{figure}
 
@@ -99,11 +111,9 @@ def update_git():
 
 def launch_load_distr():  
     subprocess.call(["bin/load_distributor_bin"])
-    pass
 
 def launch_search_engine():
     subprocess.call(["bin/search_bin"])
-    pass
 
 while True:
     update_git()
@@ -140,7 +150,7 @@ In practice we experienced serious performance issues with our python code, ofte
 
 The program reads the dictionary structure into memory on startup. It provides O(1) lookup on query terms in a hash map, using the library {\tt uthash}\cite{uthash}.
 
-\begin{lstlisting}[style=customc,captionpos=b,caption={Structure of a dictionary entry (term)}]
+\begin{lstlisting}[style=customc,captionpos=b,caption={Structure of a dictionary entry (term)},numbers=left]
 typedef struct {
     char* term;
     uint32_t byte_offset;
