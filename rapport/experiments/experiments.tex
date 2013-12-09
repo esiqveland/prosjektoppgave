@@ -117,7 +117,7 @@ ymin = 0
 We also want to vary the amount of nodes that are active in the cluster and plot performance and power consumption to see how it scales.
 This is one of the more interesting experiments as one of the strengths of this cluster is that it is easy to power down nodes during hours of low load. We will also plot the amount of queries we can deliver per watt used with differing numbers of nodes running.
 
-As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase in requests we can service per watt every time we add a node to the cluster. However since adding the more nodes to the cluster would require a new power supply as well as more network equipment, further scaling would not be very effective.
+As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase in requests we can service per watt every time we add a node to the cluster. However, since adding any more nodes to the cluster would require a new power supply as well as more network equipment, further scaling would not be very effective, so this is our breakpoint.
 
 \begin{tikzpicture}
 \pgfplotstableread{../datasets/cluster_load_dist_request_watt_per_node.txt}
@@ -157,15 +157,23 @@ ymin = 0
 \end{table}
 
 \subsubsection{Discussion}
-After the first phase of testing we can draw some interesting conclusions. With regards to throughput there is a clear point where the system can't keep up with the traffic. At this point the load balancers UDP buffers are filling up and we lose queries. We also see that the performance quickly diminishes as we increase the load.
+After the first phase of testing we can draw some interesting conclusions. With regards to throughput there is a clear point where the system can't keep up with the traffic. At this point the load balancers UDP buffers are filling up and we lose queries.
 
-Our tests regarding energy consumption and scaling have showed that there is little difference in a Raspberry PI running idle and full load. It's also of note that the switch is responsible for 25\% of the consumed power in the cluster. This would limit further scaling as it would remove the advantage of each PI improving the efficiency of the cluster.
+We verified this by looking at the system network buffers while under load. In Linux, one can look at the buffer status with the command $$netstat -aupn$$, giving something like this:
+\begin{lstlisting}
+Proto Recv Send   Local Addres        Address   PID/
+udp    16356  16356 192.168.0.200:32002  0.0.0.0:*   296/bin/load_distri
+\end{lstlisting}
+
+We also see that the performance quickly diminishes as we increase the load. After the breakpoint, practically no additional queries get answered.
+This is to be expected.
+
+Our tests regarding energy consumption and scaling show that there is little difference in a Raspberry PI running idle and full load. It's also of note that the network switch is at 4 watts responsible for 25\% of the consumed power in the cluster. This would limit further scaling as it would remove the advantage of each PI improving the efficiency of the cluster.
 
 \subsection{Experiments phase 2}
 As we discovered in phase 1, the load balancer seems to be limiting the throughput of our cluster. What better way to mitigate this than to remove it entirely and rather have the load generating application deal with it. This would also make it easier to compare with results of the same system running on the MacBook.
 
-By moving the load distributor into the load generator we of course free up one node in the system, so we now have 8 working nodes. We expect this should improve our throughput and efficiency by a bit.
-
+By moving the task of distributing load from the cluster and into the load generator (client library) we of course free up one node in the system, so we now have 8 working nodes for these tests. We expect this to improve our throughput and efficiency by a still linear amount.
 
 \subsubsection{Maximum throughput phase 2}
 As we identified the load distributor as the bottleneck in our system we decided to move the load distribution out into the load generator. This would simulate the load balancing being moved out to the client application. This was implemented by having one thread for each node in the cluster sending queries at various intervals.
