@@ -4,25 +4,30 @@
 \label{sec:experiments}
 
 \subsection{Introduction}
-In this section we experiment with the cluster to see how it performs and compare this to results from a MacBook Pro Late 2012. We plan on running these experiments in two phases, first to identify areas where improvement can be made along with bottlenecks and then after attempting to mitigate these to see if any improvement was made.
+In this section we experiment with the cluster to see how it performs and compare this to results from a MacBook Pro Late 2012. We plan on running these experiments in two phases, first to identify areas where improvement can be made along with bottlenecks and then after attempting to mitigate these to see if any improvement was made, and see where we can end up.
 
 \subsection{Setup}
-The setup is the cluster of 8 PI-nodes. Since we are limited by the 8 ports on our switch, we have the load distributor and the load generator connected to D-Link router that is then connected to the switch. 
+The setup is the cluster of 8 PI-nodes. Since we are limited by the 8 ports on our switch, we have the load distributor and the load generator connected to another D-Link router that is then connected to the switch.
+Also note that we need to be wary of this bottlenecking our total bandwidth to the 7 worker nodes through one cable.
+This means we can at most hope to push 100mbit/s of data to the workers {\em in total}.
 
 \subsection{Equipment}
-To measure results we use a combination of output from the system and measuring the power consumed by the system. To measure power usage we have a COITECH power consumption tool that is placed between the power outlet and our cluster that lets us read the current power consumption.
+To measure results we use a combination of output from the system and measuring the power consumed by the system. To measure power usage we have a COITECH power consumption tool that is placed between the power outlet and our power adapters.
+This lets us read the current power consumption of the whole system.
 
 \subsection{MacBook Pro control}
 When comparing on the MacBook, the load generator is run on a Mac Mini and the search program is run, either in one instance to test single core performance, or in two instances to utilize both the cores. When running two instances these two operate on different ports.
 
 \subsection{Experiments phase 1}
+We started out by looking at how many queries we could answer with the system, i.e. maximum throughput.
 
-\subsubsection{Maximum throughput} 
-It is of course interesting to pinpoint the maximum throughput our system can deliver. In order to test this we use a load generator which creates random queries and send these at various interval to the cluster. As the traffic is UDP we expect to see a drop in answers from once the system is over saturated. The load generator is run on a computer outside the cluster. 
+We do this first by sending queries through a proxy of sorts, the load distributor, which chooses a random worker node to send the query to.
+Later, we look at exposing direct worker access at the client.
 
+\subsubsection{Maximum throughput}
+It is of course interesting to pinpoint the maximum throughput our system can deliver. In order to test this we use a load generator which creates random queries and send these at various interval to the cluster. As the traffic is UDP we expect to see a drop in answers from once the system is over saturated. The load generator is run on a lot more powerful computer outside the cluster.
 
-
-From the numbers in Table:\ref{tab:cluster_load_dir} we see that there is a clear drop in performance at around 4400 requests per second. If we increase the load from this point we see a drastic loss in received responses. At this rate the load distributor is running on close to 100\% CPU while the workers are running at around 80\%. So we have reason to believe that the load distributor is holding back the system. 
+From the numbers in Table \ref{tab:cluster_load_dir} we see that there is a clear drop in performance at around 4400 requests per second. If we increase the load from this point we see a drastic loss in received responses. At this rate the load distributor is running on close to 100\% CPU while the workers are running at around 80\%. So we have reason to believe that the load distributor is holding back the system, effectively being the bottleneck.
 
 \pgfplotstableread{../datasets/cluster_load_dir_requests.txt}\clusterloaddir
 \begin{table}
@@ -41,11 +46,14 @@ From the numbers in Table:\ref{tab:cluster_load_dir} we see that there is a clea
 \end{table}
 
 \subsubsection{Required amount of nodes to deliver maximum throughput}
-Since the load distributor appears to be a bottleneck in our system, it could be interesting to see how many workers we need to still be able to perform at maximum throughput. In this experiment we have a look at the CPU utilization of the workers while gradually reducing the amount of workers in the cluster.
+Since the load distributor appears to be a bottleneck in our system, it could be interesting to see how many workers we need to still be able to perform at maximum throughput, i.e. to see how many workers we can drop and still deliver the same amount of work.
+In this experiment we have a look at the CPU utilization and query answer rate of the workers while gradually reducing the amount of workers in the cluster.
 
-When shutting down nodes one at the time and plotting performance at peak load we see an increase in dropped packets immediately. However we in see in Table:\ref{tab:clusterreduced} that the cluster could run with 99.7\% of queries answered with 7 instead of 8 nodes and 97.3\% answered with 6. With less than 6 nodes the system performed a lot worse. 
+As suspected, when shutting down nodes one at a time and plotting performance at peak load, we first see an increase in dropped packets after 2 workers have been removed.
 
-We are quite happy with these results as they show that the work distribution is relatively even. If we only needed a few nodes to be able handle the maximum throughput from the load distributor, then we would be no need for 8 nodes in the cluster. 
+The full results are given in Table \ref{tab:clusterreduced}. We see that the cluster could run with 99.7\% of queries answered with 6 instead of 7 workers, and at 97.3\% answered queries with 5. With less than 5 workers, system performance degrades quickly with 78.2\% of queries answered at 4 workers.
+
+We are quite happy with these results as they show that the work distribution looks fairly even. If we only needed a few nodes to be able handle the maximum throughput from the load distributor, then there would be no need for 8 nodes in the cluster.
 
 \pgfplotstableread{../datasets/cluster_reduced_workers_at_full_load.txt}\clusterreduced
 \begin{table}
@@ -64,7 +72,7 @@ We are quite happy with these results as they show that the work distribution is
 \end{table}
 
 \subsubsection{Power usage}
-From similar work\cite{RPI_BEOWULF} we have read that the Raspberry PI will drain up to 15\% more power under heavy load. We will use a power measurement device, usually used to measure the amount of power consumer electronics consume, to see how our cluster behaves under load.
+From similar work\cite{RPI_BEOWULF} we have seen that the Raspberry PI will drain up to 15\% more power under heavy load. We will use a power measurement device, usually used to measure how much power consumer electronics are using, to see how our cluster behaves under load.
 
 \pgfplotstableread{../datasets/watt_per_node.txt}\wattpernode
 \begin{table}
@@ -84,7 +92,7 @@ From similar work\cite{RPI_BEOWULF} we have read that the Raspberry PI will drai
 
 Despite having read that the Raspberry PIs would drain up to 15\% more energy under load, we were unable to have them drain more than about 9\% more. The cluster runs idle at 22-23W and 23-24W under load. These measurements include the switch which consumes a constant 4W.
 
-One limiting factor for us could be that the resolution on the measuring tool is not very high as it does not show decimals, and we do not know how rounding is handled. 
+One limiting factor for us could be that the resolution on the measuring tool is not very high as it does not show decimals, and we do not know how rounding is handled.
 
 \begin{tikzpicture}
 \pgfplotstableread{../datasets/watt_per_node.txt}
@@ -106,15 +114,17 @@ ymin = 0
 
 
 \subsubsection{Varying amount of nodes in the cluster}
-We also want to vary the amount of nodes that are active in the cluster and plot performance and power consumption to see how it scales. This one one of the more interesting experiments as one of the strengths of this cluster is that it is easy to power down nodes during hours of low load. We will also plot the amount of queries we can tolerate per watt spent with different number of nodes active. 
+We also want to vary the amount of nodes that are active in the cluster and plot performance and power consumption to see how it scales.
+This is one of the more interesting experiments as one of the strengths of this cluster is that it is easy to power down nodes during hours of low load. We will also plot the amount of queries we can deliver per watt used with differing numbers of nodes running.
 
-As we can see from table:\ref{tab:cluster_reqwattnode} we have a steady increase in requests we can service per watt every time we add a node to the cluster. However since adding the more nodes to the cluster would require a new power supply as well as more network equipment, further scaling would not be very effective. 
+As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase in requests we can service per watt every time we add a node to the cluster. However since adding the more nodes to the cluster would require a new power supply as well as more network equipment, further scaling would not be very effective.
 
 \begin{tikzpicture}
 \pgfplotstableread{../datasets/cluster_load_dist_request_watt_per_node.txt}
 \clusterreqwattnode
 
 \begin{axis}
+\centering
 [
 xlabel = active nodes,
 xmax = 9,
@@ -147,18 +157,18 @@ ymin = 0
 \end{table}
 
 \subsubsection{Discussion}
-After the first phase of testing we can draw some interesting conclusions. With regards to throughput there is a clear point where the system can't keep up with the traffic. At this point the load balancers UDP buffers are filling up and we lose queries. We also see that the performance quickly diminishes as we increase the load. 
+After the first phase of testing we can draw some interesting conclusions. With regards to throughput there is a clear point where the system can't keep up with the traffic. At this point the load balancers UDP buffers are filling up and we lose queries. We also see that the performance quickly diminishes as we increase the load.
 
-Our tests regarding energy consumption and scaling have showed that there is little difference in a Raspberry PI running idle and full load. It's also of note that the switch is responsible for 25\% of the consumed power in the cluster. This would limit further scaling as it would remove the advantage of each PI improving the efficiency of the cluster. 
+Our tests regarding energy consumption and scaling have showed that there is little difference in a Raspberry PI running idle and full load. It's also of note that the switch is responsible for 25\% of the consumed power in the cluster. This would limit further scaling as it would remove the advantage of each PI improving the efficiency of the cluster.
 
 \subsection{Experiments phase 2}
-As we discovered in phase 1, the load balancer seems to be limiting the throughput of our cluster. What better way to mitigate this than to remove it entirely and rather have the load generating application deal with it. This would also make it easier to compare with results of the same system running on the MacBook. 
+As we discovered in phase 1, the load balancer seems to be limiting the throughput of our cluster. What better way to mitigate this than to remove it entirely and rather have the load generating application deal with it. This would also make it easier to compare with results of the same system running on the MacBook.
 
-By moving the load distributor into the load generator we of course free up one node in the system, so we now have 8 working nodes. We expect this should improve our throughput and efficiency by a bit. 
+By moving the load distributor into the load generator we of course free up one node in the system, so we now have 8 working nodes. We expect this should improve our throughput and efficiency by a bit.
 
 
-\subsubsection{Maximum throughput phase 2} 
-As we identified the load distributor as the bottleneck in our system we decided to move the load distribution out into the load generator. This would simulate the load balancing being moved out to the client application. This was implemented by having one thread for each node in the cluster sending queries at various intervals. 
+\subsubsection{Maximum throughput phase 2}
+As we identified the load distributor as the bottleneck in our system we decided to move the load distribution out into the load generator. This would simulate the load balancing being moved out to the client application. This was implemented by having one thread for each node in the cluster sending queries at various intervals.
 
 \pgfplotstableread{../datasets/cluster_only_workers_requests.txt}\clusteronlyworkers
 \begin{table}
@@ -176,11 +186,11 @@ As we identified the load distributor as the bottleneck in our system we decided
 \label{tab:cluster_only_workers}
 \end{table}
 
-When skipping the load distributor and using only worker nodes we see that it performs better. We are now able to service up to around 5000 queries per second. This is an 13\% increase from the old way. Along with the increase in maximum performance we also see that it behaves a lot better under higher loads. If we compare the two methods we see that at around 6800 requests per second the load balancer 
-is only able to serve around half its requests, while the cluster is answering 98\% of the requests without the load distributor.   
+When skipping the load distributor and using only worker nodes we see that it performs better. We are now able to service up to around 5000 queries per second. This is an 13\% increase from the old way. Along with the increase in maximum performance we also see that it behaves a lot better under higher loads. If we compare the two methods we see that at around 6800 requests per second the load balancer
+is only able to serve around half its requests, while the cluster is answering 98\% of the requests without the load distributor.
 
 \subsubsection{Scalability and energy efficiency}
-As the system still consists of the same nodes doing work we don't expect there to be a change in power consumption, however since there now is 8 workers we should see an improvement in how efficient we can serve queries of various loads. We will run the same test as in phase 1 where we try to find the breakpoint for the system at an increasing amount of nodes working. 
+As the system still consists of the same nodes doing work we don't expect there to be a change in power consumption, however since there now is 8 workers we should see an improvement in how efficient we can serve queries of various loads. We will run the same test as in phase 1 where we try to find the breakpoint for the system at an increasing amount of nodes working.
 
 \begin{table}
 	\pgfplotstableread{../datasets/cluster_only_workers_request_watt_per_node.txt}
@@ -201,13 +211,13 @@ As the system still consists of the same nodes doing work we don't expect there 
 \label{tab:cluster_worker_req_watt}
 \end{table}
 
-As we can see in table:\ref{tab:cluster_worker_req_watt} we are able to achieve 181 requests per second per watt. This is an increase of 20\%. This is of course mostly due to having an additional worker pulling its weight, but we are also able to push each individual node harder without the load balancer in place. 
+As we can see in table:\ref{tab:cluster_worker_req_watt} we are able to achieve 181 requests per second per watt. This is an increase of 20\%. This is of course mostly due to having an additional worker pulling its weight, but we are also able to push each individual node harder without the load balancer in place.
 
 \subsection{Mac VS Cluster of PIs}
-In this section we will explore how our system performs compared to a MacBook Pro running the same software. We will again try to find the breakpoints of how much traffic the MacBook can handle and how efficient it can serve the requests. We test in two rounds. First only using 1 search process on the MacBook. This would then not utilize both cores on the CPU. Then we run two processes simultaneously and see how well that performs. We will also measure the power consumption on the mac under both idle and heavy load. 
+In this section we will explore how our system performs compared to a MacBook Pro running the same software. We will again try to find the breakpoints of how much traffic the MacBook can handle and how efficient it can serve the requests. We test in two rounds. First only using 1 search process on the MacBook. This would then not utilize both cores on the CPU. Then we run two processes simultaneously and see how well that performs. We will also measure the power consumption on the mac under both idle and heavy load.
 
 \subsubsection{Maximum throughput}
-Running with one core we found the maximum throughput to at around 11000 requests per second. Over double the amount that of the cluster. However this was to be expected with so much more powerful hardware. With two processes running we were able to push it up to 12700 requests per second. At this point we are pushing the limits of what both the network and the MacBook can handle. 
+Running with one core we found the maximum throughput to at around 11000 requests per second. Over double the amount that of the cluster. However this was to be expected with so much more powerful hardware. With two processes running we were able to push it up to 12700 requests per second. At this point we are pushing the limits of what both the network and the MacBook can handle.
 
 \subsubsection{Energy}
 Unlike the Raspberry PIs the MacBook really has a lot of power management built into it. We have measured it running idle at around 18 Watts and managed to push it up to 28 Watts while serving requests. We also see that how many requests we send to it reflect in the amount of power it consumes. The results of this test can be found in table:\ref{tab:mac_energy_1core} and table:\ref{tab:mac_energy_2core}.
@@ -248,5 +258,5 @@ Unlike the Raspberry PIs the MacBook really has a lot of power management built 
 \label{tab:mac_energy_2core}
 \end{table}
 
-It is apparent that under maximum load not surprisingly there is no way the PI Cluster can contest the MacBook Pro other price. However it is interesting to see how our system compares on lower request rates compared to the MacBook. Request rates that are within the limits of our system, the system surprisingly performs comparable to the MacBook. 
+It is apparent that under maximum load not surprisingly there is no way the PI Cluster can contest the MacBook Pro other price. However it is interesting to see how our system compares on lower request rates compared to the MacBook. Request rates that are within the limits of our system, the system surprisingly performs comparable to the MacBook.
 

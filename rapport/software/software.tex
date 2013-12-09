@@ -75,7 +75,7 @@ Python 2.7.5
 \end{lstlisting}
 
 \subsection{Booting and deployment}
-To collaborate and distribute our code, we use a git repository stored at GitHub. We also agreed upon a set folder structure to make it easier to maintain and deploy our code, storing the git directory under {\tt /home/<user>/src/project}.
+To collaborate and distribute our code, we use a git repository stored at GitHub\cite{github}. We also agreed upon a set folder structure to make it easier to maintain and deploy our code, storing the git directory under {\tt /home/<user>/src/project}.
 The username is the same for all nodes.
 
 We created a systemd script that runs at boot, which does a repository pull and builds all the code, then run it. So to deploy a new update, we would cut the power to the rig and start it again.
