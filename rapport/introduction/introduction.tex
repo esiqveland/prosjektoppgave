@@ -2,8 +2,8 @@
 
 \section{Introduction}
 \label{sec:introduction}
-This section discusses the background for our project and the goals and means we chose for executing this. 
-Section \ref{sec:related} briefly explores related work. 
+This section discusses the background for our project and the goals and means we chose for executing this.
+Section \ref{sec:related} briefly explores related work.
 In Section \ref{sec:hardware}, we introduce the properties of the hardware we will be using, and look at alternatives.
 Section \ref{sec:software} explains the software we have built for this project.
 Section \ref{sec:build} shows how we built the hardware of the system we will be using.
@@ -12,6 +12,9 @@ Section \ref{sec:experiments} contains the results and discussion of our work.
 \subsection{Background}
 Small single board system on chip computers are getting increasingly popular. They are tiny, low powered and cheap. But do they pack a punch?
 How would a set of these low energy devices compare up to an ordinary desktop computer if we take energy consumption and performance into account, and can they be used for cost efficiently scaling a system to different workloads?
+
+In this report we will try to answer this. Our focus will be on delivering query results from a search system, stressing the two likely slowest parts of the PI:
+It's disk access and network.
 
 \subsection{Goals}
 To explore the possibilities of more power efficient clusters.

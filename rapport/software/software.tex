@@ -1,7 +1,7 @@
 \clearpage
 \section{Software}
 \label{sec:software}
-For this project, we needed quite a bit a software to be sure we had somewhat realistic workloads. 
+For this project, we needed quite a bit a software to be sure we could generate somewhat realistic workloads.
 We also thought it important with predictability and put a lot of effort towards having a controlled environment. This goes for both the software and hardware involved.
 
 Having done a bit of performance analysis before, we are aware of how difficult it can be to get meaningful and consistent results when analyzing programs and hardware interactions. We therefore decided to base ourselves on using some code we had written earlier in a information retrieval course. It is a simple search engine and indexer written in python, that does full text searches on a indexed corpus.
@@ -22,15 +22,15 @@ dd if=inputimage.iso of=/dev/outdisk bs=1M
 \end{lstlisting}
 
 \subsection{Doing a search}
-Since a significant part of our project is related to searching, we find it reasonable to include a section on how a search engine works in general. 
+Since a significant part of our project is related to searching, we find it reasonable to include a section on how a search engine works in general.
 
-Our engine consist of two parts: indexing and searching. 
+Our engine consist of two parts: indexing and searching.
 The search engine executes and scores a set of documents for given queries. For this work, it uses the dictionary, and a postings file.
 The other part is the indexer, which builds an inverted index, the dictionary, and the postings file\cite{IntroIR} over a collection of documents (corpus).
 
-When performing the indexing task, a loop runs over every document in the corpus. 
-For every word encountered in a document, the indexer emits a term, which is made into a token. 
-A token what is left after post-processing a term. This processing usually includes stemming and removal of special characters. 
+When performing the indexing task, a loop runs over every document in the corpus.
+For every word encountered in a document, the indexer emits a term, which is made into a token.
+A token what is left after post-processing a term. This processing usually includes stemming and removal of special characters.
 The token is added to a dictionary and the document id is appended to the token's postings list. A counter is also kept along with the id to keep track of multiple occurrences of the same token in the same document.
 The result of this loop is a dictionary of all unique tokens encountered, along with a postings list, naming all the documents that contain each token.
 
@@ -68,16 +68,17 @@ COLLECT_LTO_WRAPPER=/usr/lib/gcc/armv6l-unknown-linux-gnueabihf/4.7.2/lto-wrappe
 Target: armv6l-unknown-linux-gnueabihf
 Configured with: /build/src/gcc-4.7.2/configure --prefix=/usr --libdir=/usr/lib --libexecdir=/usr/lib --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=https://bugs.archlinux.org/ --enable-languages=c,c++,fortran,lto,objc,obj-c++ --enable-shared --enable-threads=posix --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-clocale=gnu --disable-libstdcxx-pch --enable-libstdcxx-time --enable-gnu-unique-object --enable-linker-build-id --with-ppl --enable-cloog-backend=isl --disable-ppl-version-check --disable-cloog-version-check --enable-lto --enable-gold --enable-ld=default --enable-plugin --with-plugin-ld=ld.gold --with-linker-hash-style=gnu --disable-multilib --disable-libssp --disable-build-with-cxx --disable-build-poststage1-with-cxx --enable-checking=release --host=armv6l-unknown-linux-gnueabihf --build=armv6l-unknown-linux-gnueabihf --with-arch=armv6 --with-float=hard --with-fpu=vfp
 Thread model: posix
-gcc version 4.7.2 (GCC) 
+gcc version 4.7.2 (GCC)
 
 $ python --version
 Python 2.7.5
 \end{lstlisting}
 
 \subsection{Booting and deployment}
-To collaborate and distribute our code, we use a git repository stored at GitHub. We also agreed upon a set folder structure to make it easier to maintain and deploy our code.
+To collaborate and distribute our code, we use a git repository stored at GitHub. We also agreed upon a set folder structure to make it easier to maintain and deploy our code, storing the git directory under {\tt /home/<user>/src/project}.
+The username is the same for all nodes.
 
-We created a systemd script that runs at boot, which does a repository pull and builds all the code, then run it. So to deploy a new update, we would cut the power to the rig and start it again. 
+We created a systemd script that runs at boot, which does a repository pull and builds all the code, then run it. So to deploy a new update, we would cut the power to the rig and start it again.
 This proved very efficient in practice and saved us a lot of work manually, or by scripts, logging in and updating and relaunching each system. The boot script is given in listing \ref{lst:bootscript}.
 \begin{lstlisting}[captionpos=b,caption={Our Systemd boot script. It launches a script that makes sure datetime is set before launching the update script.},label={lst:bootscript}]
 #-/etc/systemd/system/pinode.service
@@ -97,10 +98,10 @@ SysVStartPriority=99
 WantedBy=multi-user.target
 
 #-/etc/rc.local
-su king -c "/home/king/src/prosjektoppgave/boot_pinode.py" 
+su king -c "/home/king/src/project/boot_pinode.py"
 
 #-boot_pinode.py
-projectdir = "/home/king/src/prosjektoppgave"
+projectdir = "/home/king/src/project"
 hostname = socket.gethostname()
 
 os.chdir(projectdir)
@@ -109,7 +110,7 @@ def update_git():
     subprocess.call(["git", "pull"])
     subprocess.call(["make"])
 
-def launch_load_distr():  
+def launch_load_distr():
     subprocess.call(["bin/load_distributor_bin"])
 
 def launch_search_engine():
@@ -160,20 +161,21 @@ typedef struct {
 } dictionary_entry;
 \end{lstlisting}
 \subsubsection{uthash}
-{\tt uthash} is a small library with a set of convenient preprocessor macros for creating and managing hash tables in C. 
-{\tt uthash} does constant time $$O(1)$$ lookups, inserts and deletes, and comes with a number of different hash functions in case your key domain is not well suited for the default hash function. 
+{\tt uthash} is a small library with a set of convenient preprocessor macros for creating and managing hash tables in C.
+{\tt uthash} does constant time $$O(1)$$ lookups, inserts and deletes, and comes with a number of different hash functions in case your key domain is not well suited for the default hash function.
+{\tt uthash} can hash strings, integers, pointers and the bytes in a structure a pointer points to.
 
 \subsubsection{Experiences}
 The first testings of the C-port showed significant improvements in delivery speed.
-It further confirmed that managing memory yourself is desirable for performance, and is especially important in an environment where resources are scarce. 
+It further confirmed that managing memory yourself is desirable for performance, and is especially important in an environment where resources are scarce.
 When blasting the searching code with queries, we quickly maxed out the available memory.
-These memory leaks were later fixed, and the program now experiences constant memory usage. 
+These memory leaks were later fixed, and the program now experiences constant memory usage.
 
 The difference in developing platform, with x86\_64 Darwin compared to the ARMv6 runtime environment did not impose any extra difficulties, except for a single case of some odd pointer behavior.
 The rest of the time, the code behaved as expected from one platform to the other, for both Python and C.
 
-For comparison between the two languages, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the pi, both for Python and {C}. 
-The results are given in Table \ref{tbl:runtimes_ports}. 
+For comparison between the two languages, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the pi, both for Python and {C}.
+The results are given in Table \ref{tbl:runtimes_ports}.
 
 For the relatively quick {Core i5}, the python code need 10 times longer to run the queries than the C code, and seem reasonable compared to known sources.
 The Python code is however detrimental to the performance for the weaker PI. The same 100,000 queries takes 84 seconds to run in C, but takes 24 times longer in python.
