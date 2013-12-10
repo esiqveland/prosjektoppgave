@@ -8,10 +8,10 @@ The Raspberry PI is a small computer in the form of a single board with a system
 The unit was intended for educational use as a tool for promoting computer science in schools in the UK. It has instead largely been adopted by higher education, research and home users, although it still has a place in children schools.
 
 \begin{figure}[h]
-	\centering
-    \includegraphics[width=0.5\textwidth]{hardware/raspberrypi_block_function}
-    \caption{Layout of the functional blocks on the PI}
-    \label{fig:pi_blockdiagram}
+    \centering
+    \includegraphics[width=0.5\textwidth]{hardware/RaspberryPi}
+    \caption{A Raspberry PI}
+    \label{fig:raspberrypi_hw}
 \end{figure}
 
 One of our concerns when we were researching this project, was the connection to the Ethernet, see the block diagram in Figure \ref{fig:pi_blockdiagram}.
@@ -21,6 +21,13 @@ The model A only has a single USB port and does not include an Ethernet adapter,
 A USB powered Ethernet implies a few things for the board. First, the computer has to poll the network adapter for data. 
 Spending CPU time on polling the adapter with such an already weak device is something we would have liked to avoid, but could not. Secondly it also possibly means a higher power drain on both the CPU because of polling and the inclusion of a USB device itself.
 It is however convenient that the USB device will use the same voltage as the board itself, and will not require any deregulation. 
+
+\begin{figure}
+	\centering
+    \includegraphics[width=0.5\textwidth]{hardware/raspberrypi_block_function}
+    \caption{Layout of the functional blocks on the PI}
+    \label{fig:pi_blockdiagram}
+\end{figure}
 
 \subsection{Configuration}
 The PI comes with a number of different options for configuration. The board supports overclocking. Also, the amount of memory split with the shared memory GPU can also be manually set at boot using {\tt /boot/config.txt}.
