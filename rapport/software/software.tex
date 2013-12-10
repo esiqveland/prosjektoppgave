@@ -9,10 +9,21 @@ Having done a bit of performance analysis before, we are aware of how difficult 
 \subsection{Alternatives}
 There are a few open source projects already that are focused on information retrieval. We will here discuss some of the software we were considering using for this project.
 
-The most obvious software alternative might be Lucene, but it is a heavier search engine that also requires a JVM. Additionally it is not a project and codebase we are familiar with.
-This fact alone would make it hard for us to modify Lucene to our needs and be sure we got it right, and keep the level of control we wish for. The limited amount of less than 500MB of RAM was also a concern of ours when we were discussing Lucene.
+\subsubsection{Lucene/Solr}
+The most obvious software alternative might be the information retrieval system Lucene. Lucene is a heavier search engine written in Java, so it also requires a JVM to be running. The limited amount of less than 500MB of RAM was our main concern when we were discussing whether to use Lucene.
 
-Another project is the Sphinx search engine\cite{sphinx}, but this also seems like overkill for our intents and purposes.
+Additionally it is not a project and codebase we are familiar with.
+This fact alone would make it hard for us to modify Lucene to our needs and be sure we got it right, and keep the level of control we wish for.
+
+To make Lucene deployable in a distributed environment, a sideproject called Solr was started, and later included in the official Lucene project. 
+It offers a way to easily deploy Lucene and it's capabilities in a distributed manner, using among other things ZooKeeper for coordinating the cluster.
+
+The concerns mentioned above and our unfamiliarity with the projects Lucene and Solr made us decide against using them.
+
+\subsubsection{Sphinx}
+Another open source project is the Sphinx search engine\cite{sphinx}. Sphinx provides full-text searching with a number of interfaces, including a SQL storage engine that can deliver results through a MariaDB server and connection. Spinx also has a query language much like SQL.
+
+But this library also seems like overkill for our intents and purposes, so we decided against this.
 
 \subsection{Setup}
 As the authors had most experience with Arch Linux and it's environment, we decided to go with the distribution provided by the Arch Linux for ARM project.
@@ -182,13 +193,13 @@ The Python code is however detrimental to the performance for the weaker PI. The
 
 \begin{table}[h]
 	\begin{center}
-	\begin{tabular}{|r|r|r|}
+	\begin{tabular}{|r|r|r|r|}
 	\hline
-	   & \multicolumn{1}{|c|}{PI}     & \multicolumn{1}{|c|}{MacBook} \\
+	   & \multicolumn{1}{|c|}{MacBook} & \multicolumn{1}{|c|}{PI (OC)}  & \multicolumn{1}{|c|}{PI} \\
 	\hline
-	C      & 84.748   & 4.782     \\
+	C      & 4.782 & 55.932 & 84.748     \\
 	\hline
-	Python & 2046.768 & 49.411    \\
+	Python & 49.411 & FIND & 2046.768   \\
 	\hline
 	\end{tabular}
 	\caption{Runtime (in seconds) for C and Python code on 100,000 queries.}
