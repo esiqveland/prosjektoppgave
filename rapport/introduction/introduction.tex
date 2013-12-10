@@ -1,30 +1,40 @@
 \clearpage
-
-\section{Abstract}
-Energy consumption and the corresponding heat dissipation in becoming a considerable challenge with regards to computer centers and super computers. Today most large scale computers use powerful multi core CPUs and have tens if not hundreds of gigabytes of RAM. In addition to being very expensive up front in the acquisition there is also a lot of cost associated with operating these computers. We don't have to look any further than the IBM produced Roadrunner which while still being the 22nd fastest computer in the world, was shut down in March 2013 because it was no longer with the power bill related to operating it.\cite{roadrunner}
-
-Much research today is related to making computers more power efficient. Intels Haswell micro architecture brings significant enhancements in laptop efficiency. However these improvements are related to saving power by slowing down the cores whenever theres lack of work. Another interesting area is the mobile processors. ARM processors are very light weight and typically run very efficiently. These cores are simpler and a lot slower than traditional CPUs, however they are very cheap. There has been some research in the use of clusters containing multiple of these ARM computers and performing normal cluster tasks. In this paper we make a cluster of 8 Raspberry PI computers and use them to process queries over a set of documents.
-
-
 \section{Introduction}
 \label{sec:introduction}
-This section discusses the background for our project and the goals and means we chose for executing this.
-Section \ref{sec:related} briefly explores related work.
+
+This section discusses the background for our project, what goals we have and the method we employed to reach our goals. This report is structured in 
+
+Section \ref{sec:related} briefly explores related work. 
 In Section \ref{sec:hardware}, we introduce the properties of the hardware we will be using, and look at alternatives.
-Section \ref{sec:software} explains the software we have built for this project.
-Section \ref{sec:build} shows how we built the hardware of the system we will be using.
-Section \ref{sec:experiments} contains the results and discussion of our work.
+Section \ref{sec:software} explains the software we have built for this project as well as configuration of the nodes.
+Section \ref{sec:build} shows how we built the hardware of the system we will be using as well as the structure for that holds our cluster.
+Section \ref{sec:experiments} contains experiments we ran on the cluster as well as the corresponding the results and discussion.
+Section \ref{sec:conclusion} contains our conclusion as well as further work that could be applied to the cluster.
 
 \subsection{Background}
-Small single board system on chip computers are getting increasingly popular. They are tiny, low powered and cheap. But do they pack a punch?
-How would a set of these low energy devices compare up to an ordinary desktop computer if we take energy consumption and performance into account, and can they be used for cost efficiently scaling a system to different workloads?
+Small single board system on chip computers are getting increasingly popular. They are tiny, low powered and cheap. But do they pack a punch? And can they be used for as traditional cluster computers?
+How would a set of these low energy devices compare up to an ordinary laptop computer if we take energy consumption, performance into account, and can they be used for cost efficiently scaling a system to different workloads?
 
-In this report we will try to answer this. Our focus will be on delivering query results from a search system, stressing the two likely slowest parts of the PI:
+In this report we will try to answer this. Our focus will be on delivering query results from a search system, stressing the two likely slowest parts of the PI\:
 It's disk access and network.
 
 \subsection{Goals}
-To explore the possibilities of more power efficient clusters.
+In this project we have several questions we want to answer:
+\begin{enumerate}
+\item How does a cluster of Raspberry Pi nodes compare to a MacBook Pro running i5?
+\item Can we scale our cluster efficiently?
+\end{enumerate}
+
+Throughout the project we will try to find answers for these questions.
 
 \subsection{Method}
-We will be using a small home made search system, and use a load generator to test the system, measuring throughput and power usage against a known desktop system.
+We will build a cluster of Raspberry PIs including a custom power supply. We will implement our own search system modifying code from the exercises of CS3245 Information Retrieval (National University of Singapore). To benchmark our system we will write a load generator to generate queries for our system to answer. We will also measure power consumption and compare these results with a MacBook Pro. 
+
+
+
+
+
+
+
+
 
