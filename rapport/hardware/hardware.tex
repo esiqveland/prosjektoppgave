@@ -3,7 +3,10 @@
 \label{sec:hardware}
 
 \subsection{Raspberry PI}
-The Raspberry PI is a small computer in the form of a single board with a system on a chip. The SoC is a BCM2835 licensed from Broadcom. It has an ARM11v6 CPU running at 700 MHz with 256 (model A) or 512 MB (model B) SDRAM shared with the on board GPU.
+The Raspberry PI is a small computer in the form of a single board with a system on a chip. The SoC is a BCM2835 licensed from Broadcom. It has an ARM11v6 CPU running at 700 MHz with 256 (model A) or 512 MB (model B) SDRAM shared with the on board GPU. 
+
+The unit was intended for educational use as a tool for promoting computer science in schools in the UK. It has instead largely been adopted by higher education, research and home users, although it still has a place in children schools.
+
 \begin{figure}[h]
 	\centering
     \includegraphics[width=0.5\textwidth]{hardware/raspberrypi_block_function}
@@ -11,23 +14,34 @@ The Raspberry PI is a small computer in the form of a single board with a system
     \label{fig:pi_blockdiagram}
 \end{figure}
 
+One of our concerns when we were researching this project, was the connection to the Ethernet, see the block diagram in Figure \ref{fig:pi_blockdiagram}.
+It shows that the Ethernet adapter is a USB device connected to the onboard 3-port USB hub. This is only included on the model B version of the board. 
+The model A only has a single USB port and does not include an Ethernet adapter, making the model B our only realistic choice.
+
+A USB powered Ethernet implies a few things for the board. First, the computer has to poll the network adapter for data. 
+Spending CPU time on polling the adapter with such an already weak device is something we would have liked to avoid, but could not. Secondly it also possibly means a higher power drain on both the CPU because of polling and the inclusion of a USB device itself.
+It is however convenient that the USB device will use the same voltage as the board itself, and will not require any deregulation. 
+
 \subsection{Configuration}
 The PI comes with a number of different options for configuration. The board supports overclocking. Also, the amount of memory split with the shared memory GPU can also be manually set at boot using {\tt /boot/config.txt}.
 Most unofficial documentation states that the PI requires a minimum of 16MB of RAM, but we were unable to get the PI to boot with less than 48 MB. 
-With less than 48, it seems the system never gets to boot.
+With less than 48 MB, it seems the system never gets to boot.
 The setting on our running hardware is therefore {\tt gpu\_mem\_512=48}.
 
-The Raspberry also allows for easy overclocking without voiding the warranty, however reports suggest a real risk for data corruption on the SD card. There have also been reports of other kinds of instability, although it still works most of the time.
-The overclocking would also lead to increased power consumption and temperatures.
-We do not want to deal with potentially unstable systems vulnerable to data corruption, and undefined behavior, so we will not be looking further into this kind of performance enhancing of the hardware.
+The Raspberry also allows for easy overclocking without voiding the warranty, however reports suggest a real risk for data corruption on the SD card. There have also been reports of other kinds of instability, although it still works most of the time. The individual boards also display different degrees of tolerance to the overclocking, some working well at higher voltages and as much as double the memory speed, while others fail very easily.
+The overclocking would also lead to increased power consumption and temperatures. In our tightly packed rig, this is a source of concern, but we will try it out none the less.
+
+We do not want to deal with potentially unstable systems vulnerable to data corruption and undefined behavior, so we will only be looking further into this kind of performance enhancing of the hardware in the final part.
 
 \subsection{Network}
 For network switching we use a standard D-Link DES-1008D 10/100 switch. We cut our own network cables using a standard wire cutting tool to size to simplify cable pulling, and also limit waste.
 
 \subsection{Power adapter}
-As a power source we use a modified LaCie power supply. We chose this one because it is able to provide 5V up to 4.2A which should be enough to power our cluster of 8 devices. 
+As a power source we use a modified LaCie power supply. We chose this one because it is able to provide 5V up to 4.2A which should be enough to power our cluster of 8 devices.
 
 \subsection{Alternative hardware}
+The market for low power SoC computers is currently good, and units are selling faster\cite{growing_market}.
+There are also new products from different manufacturers being launched continuously, and we will here take a closer look at a few of the current alternatives to the Raspberry PI.
 
 \subsubsection{BeagleBone Black}
 The BeagleBone Black is another open source low power mini computer on a single board. It is made by Texas Instruments and sold under the Creative Commons license.
