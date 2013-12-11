@@ -268,3 +268,71 @@ Unlike the Raspberry PIs the MacBook really has a lot of power management built 
 
 It is apparent that under maximum load not surprisingly there is no way the PI Cluster can contest the MacBook Pro other price. However it is interesting to see how our system compares on lower request rates compared to the MacBook. Request rates that are within the limits of our system, the system surprisingly performs comparable to the MacBook.
 
+\section{Over clocking}
+Over clocking is the process of making a computer operate at a faster clock rate than the manufacturer intended. This is done by changing software parameters, typically by increasing the operating voltage. Side effects of this process is an increase in power consumption and heat dissipation. 
+
+As every operation in our system is bounded by CPU speed, it would be reasonable to expect enhanced performance by over clocking the CPU. The Raspberry PI is very simple to over clock. By editing boot config-file one can easily change the CPU parameters.
+
+This file can be found under:
+
+\begin{lstlisting}
+\boot\config.txt
+\end{lstlisting} 
+
+\begin{lstlisting}
+## Some over clocking settings, govenor already set to on demand
+
+##None
+#arm_freq=700
+#core_freq=250
+#sdram_freq=400
+#over_voltage=0
+
+##Modest
+#arm_freq=800
+#core_freq=300
+#sdram_freq=400
+#over_voltage=0
+
+##High
+#arm_freq=950
+#core_freq=450
+#sdram_freq=450
+#over_voltage=6
+
+##Turbo
+arm_freq=1000
+core_freq=500
+sdram_freq=600
+over_voltage=6
+\end{lstlisting}
+
+By changing from no over clocking to turbo mode we increase the clock frequency from 700MHz to 1000MHz. We also increase the GPU core frequency which drives the L2 cache.
+
+As mentioned in the hardware section, overclocking the Raspberry PI might bring certain downsides. Users have experienced data corruption on the SD card as well as general instability. There are also reports of different degrees of tolerance among the Raspberry PIs. Some works perfectly under any degree of overclocking while others quickly start showing symptoms of instability.
+
+We started out by overclocking one node and then run some tests. Everything seemed to work, so we added the overclocking parameters to the entire cluster. After then rebooting the cluster we experienced all the problems mentioned above. One node had problems with its SD-card and two others were struggling with booting or network access. We did however manage to find a stable set of five nodes to compare with our existing results. In this experiment we ran five individual workers similarly to when we tried to pin point the maximum performance of the cluster with various amounts of nodes. 
+
+We were able to see an increase in throughput of around 10\% with the cores overclocked. This number was a lot lower than expected taking into account that the cluster was using 21 watts compared to 16 without the overclock. At this rate the cluster can deliver 133 requests per watt, compared to 152 without the overclock. So this was generally bad value.
+
+\section{Further optimization}
+In an attempt to further improve our performance we have tried some optimization in our code. One of them being changing the load distributor from using $$rand() \bmod N,$$ where N is the number of nodes in the cluster, to just keeping iterating over the range 1-7 instead. We did however not notice any change from that.
+
+Originally we always sent queries as 1024 byte messages. This was done for simplicity but of course at a cost of performance. By instead sending only as many bytes as needed we saw a dramatic increase in performance. Doing all measurements again was not an option but we did measure some values for comparison again.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
