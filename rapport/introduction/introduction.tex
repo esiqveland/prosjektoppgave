@@ -2,7 +2,7 @@
 \section{Introduction}
 \label{sec:introduction}
 
-This section discusses the background for our project, what goals we have and the method we employed to reach our goals. This report is structured in 
+This section discusses the background for our project, what goals we have and the method we employed to reach our goals.
 
 Section \ref{sec:related} briefly explores related work. 
 In Section \ref{sec:hardware}, we introduce the properties of the hardware we will be using, and look at alternatives.
@@ -12,10 +12,16 @@ Section \ref{sec:experiments} contains experiments we ran on the cluster as well
 Section \ref{sec:conclusion} contains our conclusion as well as further work that could be applied to the cluster.
 
 \subsection{Background}
-Small single board system on chip computers are getting increasingly popular. They are tiny, low powered and cheap. But do they pack a punch? And can they be used for as traditional cluster computers?
-How would a set of these low energy devices compare up to an ordinary laptop computer if we take energy consumption, performance into account, and can they be used for cost efficiently scaling a system to different workloads?
+The demand for computing power is ever increasing. And even though performance has grown steadily, energy efficiency has not seen the same improvements. 
+The performance has increased many fold over the last decades, but energy efficiency has not been able to follow. This means that the more powerful computers, while powerful, consume larger and larger amounts of energy. Especially in the realm of supercomputers, it has typically displayed the feature that performance scale sub-linearly, while power consumption at best scale linearly.
+There has however been some signs in the last few years that this trend might be turning around\cite{green500}. 
+Scogland et al.\cite{green500} reportedly find it likely that using less intelligent cores is a likely contributor to the increase seen in energy efficiency in small to large supercomputers in the later years.
 
-In this report we will try to answer this. Our focus will be on delivering query results from a search system, stressing the two likely slowest parts of the PI\:
+On the other end, small single board system on chip computers are getting increasingly popular. They are tiny, low powered and cheap. But do they pack a punch? And can they be used for as traditional cluster computers?
+
+We will look at how a set of these low energy devices compare up to an ordinary laptop computer if we take energy consumption, performance into account, and can they be used for cost efficiently scaling a system to different workloads?
+
+In this report we explain how we built a low power hardware system, the software to stress test it, and discuss this system's performance and energy efficiency compared to a reference system. Our focus will be on delivering query results from a information retrieval system, stressing the two likely slowest parts of the PI\:
 It's disk access and network.
 
 \subsection{Goals}
@@ -29,12 +35,5 @@ Throughout the project we will try to find answers for these questions.
 
 \subsection{Method}
 We will build a cluster of Raspberry PIs including a custom power supply. We will implement our own search system modifying code from the exercises of CS3245 Information Retrieval (National University of Singapore). To benchmark our system we will write a load generator to generate queries for our system to answer. We will also measure power consumption and compare these results with a MacBook Pro. 
-
-
-
-
-
-
-
 
 
