@@ -1,23 +1,50 @@
-
 \clearpage
-\section{Experiments}
+
+\section{Setup}
 \label{sec:experiments}
+In this section we explain how we set up the experiments with the cluster to see how it performs. We will later list these results and discuss and compare these to results from a MacBook Pro Late 2012. 
 
 \subsection{Introduction}
-In this section we experiment with the cluster to see how it performs and compare this to results from a MacBook Pro Late 2012. We plan on running these experiments in two phases, first to identify areas where improvement can be made along with bottlenecks and then after attempting to mitigate these to see if any improvement was made, and see where we can end up.
+We plan on running these experiments in two phases, first to identify areas where improvement can be made along with bottlenecks and then after attempting to mitigate these to see if any improvement was made, and see where we can end up.
+
+We currently have 3 hardware configurations. The 8 node cluster can be split into:
+
+\begin{enumerate}
+\item 1 load distributor and 7 worker nodes
+\item 8 worker nodes
+\item 5 worker nodes (overclock)
+\end{enumerate}
+
+The overclock mode is reduced to 5 workers because the last 3 nodes refused to run properly at the overclocked speed, or didn't boot at all.
+
+In addition we will also look at the i5 MacBook with 1 and 2 threads.
 
 \subsection{Setup}
 The setup is the cluster of 8 PI-nodes. Since we are limited by the 8 ports on our switch, we have the load distributor and the load generator connected to another D-Link router that is then connected to the switch.
 Also note that we need to be wary of this bottlenecking our total bandwidth to the 7 worker nodes through one cable.
 This means we can at most hope to push 100mbit/s of data to the workers {\em in total}.
+The network layout is illustrated in Figure \ref{fig:network}.
 
-\subsection{Equipment}
-To measure results we use a combination of output from the system and measuring the power consumed by the system. To measure power usage we have a COITECH power consumption tool that is placed between the power outlet and our power adapters.
-This lets us read the current power consumption of the whole system.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{experiments/networklayout}
+    \caption{The network layout for the testing environment.}
+    \label{fig:network}
+\end{figure}
+
+
+\subsection{Result gathering}
+To obtain results we use a combination of controlling sending, output from the system and measuring the power consumed. To measure power usage we have a COITECH power consumption tool that is placed between the power outlet and our power adapters.
+This lets us read the current power consumed by the whole system.
+
+Our load generation utility has a few parameters for us to control. The number of queries to be sent, sending interval, number of threads and the set of nodes to which to send.
 
 \subsection{MacBook Pro control}
-When comparing on the MacBook, the load generator is run on a Mac Mini and the search program is run, either in one instance to test single core performance, or in two instances to utilize both the cores. When running two instances these two operate on different ports.
+When comparing on the MacBook, the load generator is run on a Mac Mini and the search program is run, either in one instance to test single core performance, or in two instances to utilize both the cores.
+When running two instances these two operate on different ports.
 
+\clearpage
+\section{Results}
 \subsection{Experiments phase 1}
 We started out by looking at how many queries we could answer with the system, i.e. maximum throughput.
 
@@ -165,7 +192,7 @@ Proto Recv   Send   Local Addres         Address     PID/name
 udp   163840 163840 192.168.0.200:32002  0.0.0.0:*   296/bin/load_distri
 \end{lstlisting}
 In Listing \ref{lst:netstat} we see that the {\tt Recv} buffer and {\tt Send} buffer are currently containing 163840 bytes.
-The total size of the buffer is given by {\tt /proc/sys/net/core/rmem\_max}. It is listed in bytes and can be modified with a {\tt sysctl} call: {\tt sysctl -w net.core.rmem_max=value}
+The total size of the buffer is given by {\tt /proc/sys/net/core/rmem\_max}. It is listed in bytes and can be modified with a {\tt sysctl} call: {\tt sysctl -w net.core.rmem\_max=value}
 As we can see in this example, the buffer is currently maxed out, and all additional packages will be lost.
 
 We also see that the performance quickly diminishes as we increase the load. After the breakpoint, practically no additional queries get answered.
