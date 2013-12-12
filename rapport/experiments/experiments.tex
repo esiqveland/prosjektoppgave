@@ -319,6 +319,54 @@ It is apparent that under maximum load not surprisingly there is no way the PI C
 However it is interesting to see how our system compares on lower request rates compared to the MacBook.
 Request rates that are within the limits of our system, the system surprisingly performs comparable to the MacBook.
 
+\subsubsection{Cold reads}
+While all the other experiments have been performed on the cluster after a significant number of queries already has been answered. This ensured replicate-able results as we assume most the query words are already in memory and cache. However it would be interesting to see how the two compares when answering queries right after a reboot. In this experiment we send 5000 queries to each core operating, so in total 10000 for the MacBook and 40000 for the cluster. We then try pinpoint the breakpoint where the machines are unable to keep up with the load. The Pi cluster is run in the mode where all nodes are workers.
+
+When measuring these numbers we ran into some interesting problems. For one, the sleep system call we use to limit the interval between queries is limited at milliseconds. This turned out to be a problem for measuring the performance of the MacBook Pro as its breakpoint lies somewhere between the minimum sleep duration and no sleep duration. This is reflected in table\ref{tab:coldread_mac} where we have a gap between a load we clearly can support and a load we clearly cannot support.
+
+\begin{table}[h]
+	\pgfplotstableread{../datasets/coldread_pi.txt}
+	\coldreadpi
+	\centering
+	\pgfplotstabletypeset[
+     	columns={nrps, nanswers, orps, oanswers},
+     	every head row/.style={after row=\hline},
+		every last row/.style={after row=\hline},
+		columns/nrps/.style={column name=Rps},
+		columns/nanswers/.style={column name=received(\%)},
+		columns/orps/.style={column name=Rps(O)},
+		columns/oanswers/.style={column name=received(\%)(O))},
+     	]
+    {\coldreadpi}
+    \caption{Cold reads Pi cluster. Requests per second, and answers received in \%. (O) is with code optimization}
+\label{tab:coldread_pi}
+\end{table}
+
+\begin{table}[h]
+	\pgfplotstableread{../datasets/coldread_mac.txt}
+	\coldreadmac
+	\centering
+
+	\pgfplotstabletypeset[
+     	columns={nrps, nanswers, orps, oanswers},
+     	every head row/.style={after row=\hline},
+		every last row/.style={after row=\hline},
+		columns/nrps/.style={column name=Rps},
+		columns/nanswers/.style={column name=received(\%)},
+		columns/orps/.style={column name=Rps(O)},
+		columns/oanswers/.style={column name=received(\%)(O)},
+     	]
+    {\coldreadmac}
+    \caption{Cold reads MacBook. Requests per second, and answers received in \%. (O) is with code optimization}
+\label{tab:coldread_mac}
+\end{table}
+
+Without optimization the Pi cluster is able to support around 3000 requests per second. This is 60\% of the load it could handle previously. We also see that the code optimization does increase this number to 80\%.
+
+The Macbook fared similarly. At only around 5500 rps the performance is halved. With the optimization the performance is somewhere between 7000 and 10000.
+
+We did expect the cluster to gain some ground when we forced this much disk access. However as the MacBook runs on flash storage with reading speeds of up to 400MB/s and the poor Pis have SD-cards providing 5-8MB/s, the MacBook does have an unfair advantage.
+
 \section{Overclocking}
 Over clocking is the process of making a computer operate at a faster clock rate than the manufacturer intended. This is done by changing software parameters, typically by increasing the operating voltage. Side effects of this process is an increase in power consumption and heat dissipation.
 
@@ -365,6 +413,7 @@ As mentioned in the hardware section, overclocking the Raspberry PI might bring 
 We started out by overclocking one node and then run some tests. Everything seemed to work, so we added the overclocking parameters to the entire cluster. After then rebooting the cluster we experienced all the problems mentioned above. One node had problems with its SD-card and two others were struggling with booting or network access. We did however manage to find a stable set of five nodes to compare with our existing results. In this experiment we ran five individual workers similarly to when we tried to pin point the maximum performance of the cluster with various amounts of nodes.
 
 We were able to see an increase in throughput of around 10\% with the cores overclocked. This number was a lot lower than expected taking into account that the cluster was using 21 watts compared to 16 without the overclock. At this rate the cluster can deliver 133 requests per watt, compared to 152 without the overclock. So this was generally bad value.
+
 
 \section{Further optimization}
 In an attempt to further improve our performance we have tried some optimization in our code. One of them being changing the load distributor from using $$rand() \bmod N,$$ where N is the number of nodes in the cluster, to just keeping iterating over the range 1-7 instead. We did however not notice any change from that.
