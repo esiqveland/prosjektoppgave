@@ -200,7 +200,7 @@ One source of error for us is that the resolution on the measuring tool is not v
 We also want to vary the amount of nodes that are active in the cluster and plot performance and power consumption to see how it scales.
 This is one of the more interesting experiments as one of the strengths of this cluster is that it is easy to power down nodes during hours of low load. We did not get to implement this feature, but it can be done. We will also plot the amount of queries we can deliver per watt used with differing numbers of nodes running.
 
-As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase in requests we can service per watt every time we add a node to the cluster until we reach five workers. At this point the load distributor is at max capacity and we are unable to utilize the works fully. 
+As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase in requests we can service per watt every time we add a node to the cluster until we reach five workers. At this point the load distributor is at max capacity and we are unable to utilize the works fully.
 
 \begin{figure}[!h]
 \centering
@@ -310,7 +310,8 @@ We will run the same test as in phase 1 where we try to find the breakpoint for 
 \end{table}
 
 As we can see in Table \ref{tab:cluster_worker_req_watt} we are able to achieve 242 requests per second per watt.
-This is an increase of 54\%. This follows now utilizing all the workers fully as well as having one extra worker pulling its weight instead of doing load distribution.
+This is an increase of 54\%.
+This follows from now utilizing all the workers fully as well as having one extra node doing work instead of doing load distribution.
 
 \subsubsection{Discussion}
 When skipping the load distributor and using only worker nodes we see that it performs better, and a linear increase in performance is indeed observed.
