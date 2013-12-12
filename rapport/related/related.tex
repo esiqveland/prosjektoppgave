@@ -1,12 +1,15 @@
 \clearpage
 \section{Related work}
 \label{sec:related}
-In this section we will explore related work on the area. For building we have specifically taken a look at a project by Joshua Kiepert and his work at building a Raspberry PI based Beowulf cluster.
+In this section we will explore related work on the area of energy efficiency and simple computers. 
+
+For building we have specifically taken a look at a project by Joshua Kiepert and his work at building a Raspberry PI based Beowulf cluster\cite{RPI_BEOWULF}.
 After follows a look at the FAWN project and their take and findings on using ``Wimpy Nodes'' for cluster-based, high performance computing, and also defining their niche.
-Lastly follows a argument for the base of our project and why low-powered, slower computers should be looked into.
+Lastly follows an argument for the basis of our project and why low-powered, slower computers should be looked into.
 
 \subsection{Raspberry PI Beowulf cluster}
-A lot of the inspiration to create a Raspberry PI cluster came from reading a report on a Beowulf cluster project from Boise State University.\cite{RPI_BEOWULF} In this project the performance of 32 Raspberry PI nodes put up against a node running an 3.1GHz Intel Xeon E3-1225 quad-core processor and 8GB of RAM. Along with comparing performance under parallel computing, they also had a look on power consumption. It will be interesting to see if we achieve comparable results. 
+A lot of the inspiration to create a Raspberry PI cluster came from reading a report on a Beowulf cluster project from Boise State University.\cite{RPI_BEOWULF} In this project the performance of 32 Raspberry PI nodes put up against a node running an 3.1GHz Intel Xeon E3-1225 quad-core processor and 8GB of RAM.
+Along with comparing performance under parallel computing, they also had a look on power consumption. His work shows that 32 Raspberry Pi nodes does not scale cost nor energy efficiently for number crunching tasks.  
 
 \subsection{FAWN: A Fast Array of Wimpy Nodes}
 FAWN\cite{fawn} is a project that aims to reduce the energy consumption of cost-effective clusters with data-intensive workloads. 
@@ -16,27 +19,27 @@ They use this architecture to implement a replicated, highly available key-value
 Their key-value store implementation is based on workloads typically seen by other highly available key-value stores, such as Amazons Dynamo and Facebooks memcached. These are geared towards high amounts of random accesses with small data objects, typically less than 1 KB. All this while requiring the highest levels of availability and durability.
 Today these systems are typically run on large amounts of commodity hardware, including spinning hard drives, which are notoriously bad for random access patterns.
 
-The hardware used is an embedded device based on a SoC from PCEngine. It features a 500MHz AMD Geode LX processor, coupled with 256 MB RAM running at 400 MHz. The storage is done by a Compact Flash controller. Power consumption is quoted between 3W and 6W (peak load).
+The hardware used is an embedded device based on a system-on-a-chip from PCEngine. It features a 500MHz AMD Geode LX processor, coupled with 256 MB RAM running at 400 MHz. The storage is done by a Compact Flash controller. Power consumption is quoted between 3W and 6W (peak load).
 
-Through their work, \cite{fawn} shows they were able to provide roughly 350 queries per Joule which is 2 orders of magnitude more than traditional disk-based systems at the time of writing (2009). 
+Through their work, Andersen et al.\cite{fawn} shows they were able to provide roughly 350 queries per Joule, which is 2 orders of magnitude more than traditional disk-based systems at the time of writing (2009). 
 
 \subsection{Motivation}
 Motivational factors for our project is interest in energy efficient scaling of systems.
 
-The reason for small embedded computers with small amounts of flash storage is related to several problems within current computing.
+The reason for using small embedded computers with small amounts of flash storage is related to several problems within current computing.
 
 The CPU performance compared to I/O gap is still increasing. CPUs continue to increase performance at a vastly higher rate than IO devices, such as storage and network equipment.
 When these factors are bottlenecking the system, i.e. when the system is doing a lot of data intensive work, it often results in low CPU utilization.
 
 With embedded devices using flash storage as persistent storage, this performance gap is a lot closer.
-Together with the simpler and slower processors it results in fewer cycles spent waiting for IO to happen.
+Together with simpler and slower processors it results in fewer cycles spent waiting for IO to finish.
 
-This also benefits the embedded computers in another way. Modern powerful CPUs have despite the improved efficiency of later years, still a fairly high base power consumption.
+Spending fewer cycles waiting for IO also benefits the embedded computers in another way. Modern powerful CPUs have despite the improved efficiency of later years, still a fairly high base power consumption.
 By base power consumption we mean that a CPU being utilized at 25\% consumes more than 50\% of the power consumed at 100\% utilization. 
-This motivates keeping the CPU at high loads for energy efficiency means, but this can not happen if it being stuck waiting for IO.
+This motivates keeping the CPU at high loads for energy efficiency, but this can not happen if it is stuck waiting for IO.
 Ergo, to ensure energy efficiency, one should keep the CPU as busy as possible.
 
-\cite{fawn} also argues the simpler architecture of embedded CPUs is leaving a larger portion of the transistors to actually execute operations.
+Andersen et al.\cite{fawn} also argues the simpler architecture of embedded CPUs is leaving a larger portion of the transistors to actually execute operations.
 In more advanced CPUs a lot of die space and transistors is spent on cache storage, cache coherency protocols, and speculative execution, like out-of-order instructions and branch prediction.
 All of this logic requires large amounts of energy to power, and is mostly there to help bridge the gap between CPU and disc/IO devices. But this does not help directly with operations in the CPU, and increases power consumption by a good amount.
 The simpler CPUs, providing a larger proportion of transistors to executing operations, are thus more energy efficient while executing these because they have less overhead in powering additional transistors, i.e. they provide more instructions executed per Joule.

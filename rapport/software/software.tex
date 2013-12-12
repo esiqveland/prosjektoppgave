@@ -1,13 +1,13 @@
 \clearpage
 \section{Software}
 \label{sec:software}
-For this project, we needed quite a bit a software to be sure we could generate somewhat realistic workloads.
+For this project, we needed quite a bit of software to be sure we could generate somewhat realistic workloads.
 We also thought it important with predictability and put a lot of effort towards having a controlled environment. This goes for both the software and hardware involved.
 
 Having done a bit of performance analysis before, we are aware of how difficult it can be to get meaningful and consistent results when analyzing programs and hardware interactions. We therefore decided to base ourselves on using some code we had written earlier in a information retrieval course. It is a simple search engine and indexer written in python, that does full text searches on a indexed corpus.
 
 \subsection{Alternatives}
-There are a few open source projects already that are focused on information retrieval. We will here discuss some of the software we were considering using for this project.
+There are a few open source projects that are focused on information retrieval. We will here discuss some of the software we were considering using for this project.
 
 \subsubsection{Lucene/Solr}
 The most obvious software alternative might be the information retrieval system Lucene. Lucene is a heavier search engine written in Java, so it also requires a JVM to be running. The limited amount of less than 500MB of RAM was our main concern when we were discussing whether to use Lucene.
@@ -41,7 +41,7 @@ The other part is the indexer, which builds an inverted index, the dictionary, a
 
 When performing the indexing task, a loop runs over every document in the corpus.
 For every word encountered in a document, the indexer emits a term, which is made into a token.
-A token what is left after post-processing a term. This processing usually includes stemming and removal of special characters.
+A token is what is left after post-processing a term. This processing usually includes stemming and removal of special characters.
 The token is added to a dictionary and the document id is appended to the token's postings list. A counter is also kept along with the id to keep track of multiple occurrences of the same token in the same document.
 The result of this loop is a dictionary of all unique tokens encountered, along with a postings list, naming all the documents that contain each token.
 
@@ -55,7 +55,7 @@ The postings entries are a list of tuples, in the format $$<docID, count>$$, giv
 \begin{figure}[h]
     \center
     \includegraphics[width=0.5\textwidth]{software/index_postings_lists}
-    \caption{A sample index and postings list. Figure taken from Introduction to IR\cite{IntroIR}.}
+    \caption{A sample index and postings list. Credits goes to Introduction to IR\cite{IntroIR}.}
     \label{fig:index_postings_lists_sw}
 \end{figure}
 
@@ -90,7 +90,7 @@ To collaborate and distribute our code, we use a git repository stored at GitHub
 The username is the same for all nodes.
 
 We created a systemd script that runs at boot, which does a repository pull and builds all the code, then run it. So to deploy a new update, we would cut the power to the rig and start it again.
-This proved very efficient in practice and saved us a lot of work manually, or by scripts, logging in and updating and relaunching each system. The boot script is given in listing \ref{lst:bootscript}.
+This proved very efficient in practice and saved us a lot of manual work, like manually logging in and updating each individual system. The boot script is given in listing \ref{lst:bootscript}.
 \begin{lstlisting}[captionpos=b,caption={Our Systemd boot script. It launches a script that makes sure datetime is set before launching the update script.},label={lst:bootscript}]
 #-/etc/systemd/system/pinode.service
 [Unit]
@@ -144,7 +144,7 @@ The load generator runs on several threads, where one thread is responsible for 
 
 The load generator includes some configurable parameters, most importantly the frequency of the queries being sent and the number of threads sending queries simultaneously.
 
-The load generator was later edited to also be able to send queries directly to the workers and then bypass the load distribution all together. This simulates moving the load distribution out to the client application. In this case, we have one thread for each worker that sends messages at a given interval.
+The load generator was later edited to also be able to send queries directly to the workers and by bypassing the load distributor all together. This simulates moving the load distribution out to the client application. In this case, we have one thread for each worker that sends queries at a given interval.
 
 \subsection{Load distribution}
 One of the nodes in the cluster will be in charge of load distribution. The load distributor node will receive all the queries and then forward them to the worker nodes.
@@ -157,10 +157,10 @@ The python version we were basing the program on relied heavily upon the python 
 NLTK provides a lot of useful methods for processing natural languages in Python, including different tools for stemming and other tokenization tricks.
 Stemming is the process of reducing inflected or conjugated words into their basic or root form. Examples include removal of prefixes, suffixes, tense and vowel changes. I.e. words like ``fishing'', ``fisher'' and ``fished'' all end up mapping to the same stem ``fish''.
 
-The toolkit also provides stop word lists (words like and, or, on, i and so on) and improved splicing of natural language sentences. As this is a lot of work to implement, we have chosen to do indexing in python and deliver and calculate search results based only on the stemmed forms for the C program.
+The toolkit also provides stop word lists (words like ``and'', ``or'', ``on'', ``i'' and so on) and improved splicing of natural language sentences. As this is a lot of work to implement, we have chosen to do indexing in python and deliver and calculate search results based only on the stemmed forms for the C program.
 
 \subsection{Optimized C-port}
-In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds. We therefore decided to rewrite the program using C. This proved it both challenging and useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
+In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds. We therefore decided to rewrite the program using C. This proved both challenging and useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
 
 The program reads the dictionary structure into memory on startup. It provides O(1) lookup on query terms in a hash map, using the library {\tt uthash}\cite{uthash}.
 
@@ -187,11 +187,11 @@ These memory leaks were later fixed, and the program now experiences constant me
 The difference in developing platform, with x86\_64 Darwin compared to the ARMv6 runtime environment did not impose any extra difficulties, except for a single case of some odd pointer behavior.
 The rest of the time, the code behaved as expected from one platform to the other, for both Python and C.
 
-For comparison between the two languages, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the pi, both for Python and {C}.
+For comparison between the two languages, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the Pi, both for Python and {C}.
 The results are given in Table \ref{tbl:runtimes_ports}.
 
-For the relatively quick {Core i5}, the python code need 10 times longer to run the queries than the C code, and seem reasonable compared to known sources.
-The Python code is however detrimental to the performance for the weaker PI. The same 100,000 queries takes 84 seconds to run in C, but takes 24 times longer in python.
+For the relatively quick {Core i5}, the python code need 10 times longer to run the queries than the C code. This difference in performance seem reasonable compared to known sources.
+The Python code is however detrimental to the performance for the weaker Pi. The same 100,000 queries takes 84 seconds to run in C, but takes 24 times longer in python.
 
 \begin{table}[h]
 	\begin{center}
@@ -199,12 +199,12 @@ The Python code is however detrimental to the performance for the weaker PI. The
 	\hline
 	   & \multicolumn{1}{|c|}{MacBook} & \multicolumn{1}{|c|}{PI (OC)}  & \multicolumn{1}{|c|}{PI} \\
 	\hline
-	C      & 4.782 & 55.932 & 84.748     \\
+	C      & 4.78 & 55.93 & 84.75     \\
 	\hline
-	Python & 49.411 & FIND & 2046.768   \\
+	Python & 49.41 & FIND & 2046.77   \\
 	\hline
 	\end{tabular}
-	\caption{Runtime (in seconds) for C and Python code on 100,000 queries.}
+	\caption{Runtime (in seconds) for C and Python code on 100,000 queries. OC is the overclocked Pi.}
 	\label{tbl:runtimes_ports}
 	\end{center}
 \end{table}
