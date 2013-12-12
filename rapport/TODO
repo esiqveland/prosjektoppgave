@@ -15,9 +15,13 @@ ideas:
 
 
 
+overclock:
+to verify overclock is working, read current cpu clock from this file:
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
 
 
-
+setup:
+inkludere en tegning av nettverksoppsett.
 
 
 future work:
