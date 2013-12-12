@@ -157,12 +157,6 @@ The python version we were basing our program on, relied heavily upon the python
 NLTK provides a lot of useful methods for processing natural languages in Python, including different tools for stemming and other tokenization tricks.
 Stemming is the process of reducing inflected or conjugated words into their basic or root form. Examples include removal of prefixes, suffixes, tense and vowel changes. I.e. words like ``fishing'', ``fisher'' and ``fished'' all end up mapping to the same stem ``fish''.
 
-<<<<<<< HEAD
-The toolkit also provides stop word lists (words like ``and'', ``or'', ``on'', ``i'' and so on) and improved splicing of natural language sentences. As this is a lot of work to implement, we have chosen to do indexing in python and deliver and calculate search results based only on the stemmed forms for the C program.
-
-\subsection{Optimized C-port}
-In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds. We therefore decided to rewrite the program using C. This proved both challenging and useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
-=======
 The toolkit also provides stop word lists (words like {\em and}, {\em or}, {\em on}, {\em the} and so on) and improved splicing of natural language sentences into token.
 NLTK however only exist for python, so if we were to write a C version, we would have to port the library, or at least the functionality we use.
 As this is a lot of work to implement, and well beyond the scope of our work here, we have chosen to do the indexing in python and deliver and calculate search results based only on the stemmed forms for the C program.
@@ -175,7 +169,6 @@ In practice we experienced serious performance issues with our python code, ofte
 Our current implementation caches everything it looks up in memory. We did not have the time to write a proper system for managing the amount of memory consumed by the cache.
 This could lead to out of memory issues, but the internal structures will be within bounds of the size of the postings file, which is by far the most dominant element with regards to memory usage.
 The reader should note that as a consequence, we have to keep an eye on the size of the postings file, so as not to let the nodes run out of memory and crash. We did not run into any problems with this approach in practice, as our corpus is fairly small.
->>>>>>> 1415363d4005d4a0beccc996bfdc2f5e3d78d2aa
 
 The program reads the dictionary structure into memory on startup. It provides O(1) lookup on query terms in a hash map, using the library {\tt uthash}\cite{uthash}.
 
