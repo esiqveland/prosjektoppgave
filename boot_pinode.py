@@ -26,8 +26,7 @@ while True:
     update_git()
 
     if hostname[len(hostname)-1] == '0':
-        #launch_load_distr()
-        launch_search_engine()
+        launch_load_distr()
     else:
         launch_search_engine()
 
