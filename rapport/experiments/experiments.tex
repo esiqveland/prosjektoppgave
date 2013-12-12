@@ -3,7 +3,7 @@
 \section{Setup}
 \label{sec:setup}
 
-In this section we explain how we set up the experiments with the cluster to see how it performs. We will later list these results and discuss and compare these to results from a MacBook Pro Late 2012. 
+In this section we explain how we set up the experiments with the cluster to see how it performs. We will later list these results and discuss and compare these to results from a MacBook Pro Late 2012.
 
 \subsection{Introduction}
 We plan on running these experiments in two phases, first to identify areas where improvement can be made along with bottlenecks and then after attempting to mitigate these to see if any improvement was made, and see where we can end up.
@@ -104,7 +104,7 @@ We are quite happy with these results as they show that the work distribution lo
 \end{table}
 
 \subsubsection{Power usage}
-From similar work\cite{RPI_BEOWULF} we have seen that the Raspberry PI will drain up to 15\% more power under heavy load. 
+From similar work\cite{RPI_BEOWULF} we have seen that the Raspberry PI will drain up to 15\% more power under heavy load.
 
 \pgfplotstableread{../datasets/watt_per_node.txt}\wattpernode
 \begin{table}
@@ -205,17 +205,20 @@ As we can see in this example, the buffer is currently maxed out, and all additi
 We also see that the performance quickly diminishes as we increase the load. After the breakpoint, practically no additional queries get answered.
 This is to be expected.
 
-Our tests regarding energy consumption and scaling show that there is little difference in a Raspberry PI running idle and full load. It's also of note that the network switch is at 4 watts responsible for 25\% of the consumed power in the cluster. This would impact further scaling as it would remove the advantage of each PI improving the efficiency of the cluster.
+Our tests regarding energy consumption and scaling show that there is little difference in a Raspberry PI running idle and full load.
+It's also of note that the network switch is at 4 watts responsible for 25\% of the consumed power in the cluster.
+This would impact further scaling as it would remove the advantage of each PI improving the efficiency of the cluster.
 
 \subsection{8 workers}
 As we discovered in phase 1, the load balancer seems to be limiting the throughput of our cluster.
 We therefore try to mitigate this by removing the load distributor entirely and rather have the load generating application (client) deal with distributing work.
 This would also make it easier to compare with results of the same system running on the MacBook.
 
-By moving the task of distributing load from the cluster and into the load generator (client library) we of course free up one node in the system, so we now have 8 working nodes for these tests. We expect this to improve our throughput and efficiency by a still linear amount.
+By moving the task of distributing load from the cluster and into the load generator (client library) we of course free up one node in the system, so we now have 8 working nodes for these tests. We expect this to improve our throughput and efficiency by a still linear amount, which we later confirm.
 
 \subsubsection{Maximum throughput phase 2}
-As we identified the load distributor as the bottleneck in our system we decided to move the load distribution out into the load generator. This would simulate the load balancing being moved out to the client application. This was implemented by having one thread in the client for each node in the cluster, sending queries at various intervals.
+As we identified the load distributor as the bottleneck in our system we decided to move the load distribution out into the load generator.
+This was implemented by having one thread in the client for each node in the cluster, sending queries at various intervals. The results from the load testing are given in Table \ref{tab:cluster_only_workers}.
 
 \pgfplotstableread{../datasets/cluster_only_workers_requests.txt}\clusteronlyworkers
 \begin{table}
@@ -233,17 +236,14 @@ As we identified the load distributor as the bottleneck in our system we decided
 \label{tab:cluster_only_workers}
 \end{table}
 
-When skipping the load distributor and using only worker nodes we see that it performs better. We are now able to service up to around 5000 queries per second. This is an 13\% increase from the old way. Along with the increase in maximum performance we also see that it behaves a lot better under higher loads. If we compare the two methods we see that at around 6800 requests per second the load balancer
-is only able to serve around half its requests, while the cluster is answering 98\% of the requests without the load distributor.
-
 \subsubsection{Scalability and energy efficiency}
-As the system still consists of the same nodes doing work we don't expect there to be a change in power consumption, however since there now is 8 workers we should see an improvement in how efficient we can serve queries of various loads. We will run the same test as in phase 1 where we try to find the breakpoint for the system at an increasing amount of nodes working.
+As the system still consists of the same nodes doing work we don't expect there to be a change in power consumption, however since there now is 8 workers we should see an improvement in how efficient we can serve queries of various loads.
+We will run the same test as in phase 1 where we try to find the breakpoint for the system at an increasing amount of nodes working.
 
 \begin{table}
 	\pgfplotstableread{../datasets/cluster_only_workers_request_watt_per_node.txt}
 	\clusterworkerreqwatt
 	\centering
-	\caption{Efficieny with various nodes without load balancer}
 	\pgfplotstabletypeset[
      	columns={nodes,requests, watt, reqwatt},
      	every head row/.style={before row=\hline,
@@ -255,25 +255,34 @@ As the system still consists of the same nodes doing work we don't expect there 
 		columns/reqwatt/.style={column name=Requests per watt},
      	]
     {\clusterworkerreqwatt}
+    \caption{Efficiency with various nodes without load balancer}
 \label{tab:cluster_worker_req_watt}
 \end{table}
 
-As we can see in table:\ref{tab:cluster_worker_req_watt} we are able to achieve 181 requests per second per watt. This is an increase of 20\%. This is of course mostly due to having an additional worker pulling its weight, but we are also able to push each individual node harder without the load balancer in place.
+As we can see in Table \ref{tab:cluster_worker_req_watt} we are able to achieve 181 requests per second per watt.
+This is an increase of 20\%. This is of course mostly due to having an additional worker pulling its weight, but we are also able to push each individual node harder without the load balancer in place.
+
+\subsubsection{Discussion}
+When skipping the load distributor and using only worker nodes we see that it performs better, and a linear increase in performance is indeed observed.
+We are now able to service up to around 5000 queries per second. This is an 13\% increase from the 7 workers plus 1 load distributer.
+Along with the increase in maximum performance we also see that it behaves a lot better under higher loads.
+If we compare the two methods we see that at around 6800 requests per second the load balancer is only able to serve around half its requests, while the cluster is answering 98\% of the requests without the load distributor.
 
 \subsection{Mac VS Cluster of PIs}
 In this section we will explore how our system performs compared to a MacBook Pro running the same software. We will again try to find the breakpoints of how much traffic the MacBook can handle and how efficient it can serve the requests. We test in two rounds. First only using 1 search process on the MacBook. This would then not utilize both cores on the CPU. Then we run two processes simultaneously and see how well that performs. We will also measure the power consumption on the mac under both idle and heavy load.
 
 \subsubsection{Maximum throughput}
-Running with one core we found the maximum throughput to at around 11000 requests per second. Over double the amount that of the cluster. However this was to be expected with so much more powerful hardware. With two processes running we were able to push it up to 12700 requests per second. At this point we are pushing the limits of what both the network and the MacBook can handle.
+Running with one core we found the maximum throughput to at around 11000 requests per second. Over double the amount that of the cluster.
+However this was to be expected with so much more powerful hardware. With two processes running we were able to push it up to 12700 requests per second. At this point we are pushing the limits of what both the network and the MacBook can handle.
 
 \subsubsection{Energy}
-Unlike the Raspberry PIs the MacBook really has a lot of power management built into it. We have measured it running idle at around 18 Watts and managed to push it up to 28 Watts while serving requests. We also see that how many requests we send to it reflect in the amount of power it consumes. The results of this test can be found in table:\ref{tab:mac_energy_1core} and table:\ref{tab:mac_energy_2core}.
+Unlike the Raspberry PIs the MacBook really has a lot of power management built into it. We have measured it running idle at around 18 Watts and managed to push it up to 28 Watts while serving requests.
+We also see that how many requests we send to it reflect in the amount of power it consumes. The results of this test can be found in Table \ref{tab:mac_energy_1core} and Table \ref{tab:mac_energy_2core}.
 
 \begin{table}
 	\pgfplotstableread{../datasets/mac_energy_1core.txt}
 	\macenenrgyonecore
 	\centering
-	\caption{Mac efficiency 1 core}
 	\pgfplotstabletypeset[
      	columns={requests, watt, reqwatt},
      	every head row/.style={before row=\hline,
@@ -284,6 +293,7 @@ Unlike the Raspberry PIs the MacBook really has a lot of power management built 
 		columns/reqwatt/.style={column name=Requests per watt},
      	]
     {\macenenrgyonecore}
+    \caption{Mac efficiency 1 core}
 \label{tab:mac_energy_1core}
 \end{table}
 
@@ -291,7 +301,6 @@ Unlike the Raspberry PIs the MacBook really has a lot of power management built 
 	\pgfplotstableread{../datasets/mac_energy_2core.txt}
 	\macenergytwocore
 	\centering
-	\caption{Mac efficiency 2 core}
 	\pgfplotstabletypeset[
      	columns={requests, watt, reqwatt},
      	every head row/.style={before row=\hline,
@@ -302,13 +311,16 @@ Unlike the Raspberry PIs the MacBook really has a lot of power management built 
 		columns/reqwatt/.style={column name=Requests per watt},
      	]
     {\macenergytwocore}
+    \caption{Mac efficiency 2 core}
 \label{tab:mac_energy_2core}
 \end{table}
 
-It is apparent that under maximum load not surprisingly there is no way the PI Cluster can contest the MacBook Pro other price. However it is interesting to see how our system compares on lower request rates compared to the MacBook. Request rates that are within the limits of our system, the system surprisingly performs comparable to the MacBook.
+It is apparent that under maximum load not surprisingly there is no way the PI Cluster can contest the MacBook Pro other price.
+However it is interesting to see how our system compares on lower request rates compared to the MacBook.
+Request rates that are within the limits of our system, the system surprisingly performs comparable to the MacBook.
 
 \subsubsection{Cold reads}
-While all the other experiments have been performed on the cluster after a significant number of queries already has been answered. This ensured replicate-able results as we assume most the query words are already in memory and cache. However it would be interesting to see how the two compares when answering queries right after a reboot. In this experiment we send 5000 queries to each core operating, so in total 10000 for the MacBook and 40000 for the cluster. We then try pinpoint the breakpoint where the machines are unable to keep up with the load. The Pi cluster is run in the mode where all nodes are workers. 
+While all the other experiments have been performed on the cluster after a significant number of queries already has been answered. This ensured replicate-able results as we assume most the query words are already in memory and cache. However it would be interesting to see how the two compares when answering queries right after a reboot. In this experiment we send 5000 queries to each core operating, so in total 10000 for the MacBook and 40000 for the cluster. We then try pinpoint the breakpoint where the machines are unable to keep up with the load. The Pi cluster is run in the mode where all nodes are workers.
 
 When measuring these numbers we ran into some interesting problems. For one, the sleep system call we use to limit the interval between queries is limited at milliseconds. This turned out to be a problem for measuring the performance of the MacBook Pro as its breakpoint lies somewhere between the minimum sleep duration and no sleep duration. This is reflected in table\ref{tab:coldread_mac} where we have a gap between a load we clearly can support and a load we clearly cannot support.
 
@@ -334,7 +346,7 @@ When measuring these numbers we ran into some interesting problems. For one, the
 	\pgfplotstableread{../datasets/coldread_mac.txt}
 	\coldreadmac
 	\centering
-	
+
 	\pgfplotstabletypeset[
      	columns={nrps, nanswers, orps, oanswers},
      	every head row/.style={after row=\hline},
@@ -353,10 +365,10 @@ Without optimization the Pi cluster is able to support around 3000 requests per 
 
 The Macbook fared similarly. At only around 5500 rps the performance is halved. With the optimization the performance is somewhere between 7000 and 10000.
 
-We did expect the cluster to gain some ground when we forced this much disk access. However as the MacBook runs on flash storage with reading speeds of up to 400MB/s and the poor Pis have SD-cards providing 5-8MB/s, the MacBook does have an unfair advantage.  
+We did expect the cluster to gain some ground when we forced this much disk access. However as the MacBook runs on flash storage with reading speeds of up to 400MB/s and the poor Pis have SD-cards providing 5-8MB/s, the MacBook does have an unfair advantage.
 
-\section{Over clocking}
-Over clocking is the process of making a computer operate at a faster clock rate than the manufacturer intended. This is done by changing software parameters, typically by increasing the operating voltage. Side effects of this process is an increase in power consumption and heat dissipation. 
+\section{Overclocking}
+Over clocking is the process of making a computer operate at a faster clock rate than the manufacturer intended. This is done by changing software parameters, typically by increasing the operating voltage. Side effects of this process is an increase in power consumption and heat dissipation.
 
 As every operation in our system is bounded by CPU speed, it would be reasonable to expect enhanced performance by over clocking the CPU. The Raspberry PI is very simple to over clock. By editing boot config-file one can easily change the CPU parameters.
 
@@ -364,7 +376,7 @@ This file can be found under:
 
 \begin{lstlisting}
 \boot\config.txt
-\end{lstlisting} 
+\end{lstlisting}
 
 \begin{lstlisting}
 ## Some over clocking settings, govenor already set to on demand
@@ -398,7 +410,7 @@ By changing from no over clocking to turbo mode we increase the clock frequency 
 
 As mentioned in the hardware section, overclocking the Raspberry PI might bring certain downsides. Users have experienced data corruption on the SD card as well as general instability. There are also reports of different degrees of tolerance among the Raspberry PIs. Some works perfectly under any degree of overclocking while others quickly start showing symptoms of instability.
 
-We started out by overclocking one node and then run some tests. Everything seemed to work, so we added the overclocking parameters to the entire cluster. After then rebooting the cluster we experienced all the problems mentioned above. One node had problems with its SD-card and two others were struggling with booting or network access. We did however manage to find a stable set of five nodes to compare with our existing results. In this experiment we ran five individual workers similarly to when we tried to pin point the maximum performance of the cluster with various amounts of nodes. 
+We started out by overclocking one node and then run some tests. Everything seemed to work, so we added the overclocking parameters to the entire cluster. After then rebooting the cluster we experienced all the problems mentioned above. One node had problems with its SD-card and two others were struggling with booting or network access. We did however manage to find a stable set of five nodes to compare with our existing results. In this experiment we ran five individual workers similarly to when we tried to pin point the maximum performance of the cluster with various amounts of nodes.
 
 We were able to see an increase in throughput of around 10\% with the cores overclocked. This number was a lot lower than expected taking into account that the cluster was using 21 watts compared to 16 without the overclock. At this rate the cluster can deliver 133 requests per watt, compared to 152 without the overclock. So this was generally bad value.
 
