@@ -1,0 +1,25 @@
+TODO
+
+ideas:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+future work:
+try out nodes for indexing work, lots of IO, but too much cpu? Map reduce does not seem to perform well on pis, at least with hadoop.\ref
+

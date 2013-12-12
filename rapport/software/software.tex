@@ -15,7 +15,7 @@ The most obvious software alternative might be the information retrieval system 
 Additionally it is not a project and codebase we are familiar with.
 This fact alone would make it hard for us to modify Lucene to our needs and be sure we got it right, and keep the level of control we wish for.
 
-To make Lucene deployable in a distributed environment, a sideproject called Solr was started, and later included in the official Lucene project. 
+To make Lucene deployable in a distributed environment, a sideproject called Solr was started, and later included in the official Lucene project.
 It offers a way to easily deploy Lucene and it's capabilities in a distributed manner, using among other things ZooKeeper for coordinating the cluster.
 
 The concerns mentioned above and our unfamiliarity with the projects Lucene and Solr made us decide against using them.
@@ -153,14 +153,29 @@ The messages from the load distributor to the worker nodes includes information 
 This scheme is simple, but could also prove to be a bottleneck of the system. Seeing as all communication has to go through this node we could end up with the performance of the cluster being limited by the load distributor.
 
 \subsection{Original search engine - python version}
-The python version we were basing the program on relied heavily upon the python library Natural Language Toolkit\cite{nltk} (NLTK).
+The python version we were basing our program on, relied heavily upon the python library Natural Language Toolkit\cite{nltk} (NLTK).
 NLTK provides a lot of useful methods for processing natural languages in Python, including different tools for stemming and other tokenization tricks.
 Stemming is the process of reducing inflected or conjugated words into their basic or root form. Examples include removal of prefixes, suffixes, tense and vowel changes. I.e. words like ``fishing'', ``fisher'' and ``fished'' all end up mapping to the same stem ``fish''.
 
+<<<<<<< HEAD
 The toolkit also provides stop word lists (words like ``and'', ``or'', ``on'', ``i'' and so on) and improved splicing of natural language sentences. As this is a lot of work to implement, we have chosen to do indexing in python and deliver and calculate search results based only on the stemmed forms for the C program.
 
 \subsection{Optimized C-port}
 In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds. We therefore decided to rewrite the program using C. This proved both challenging and useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
+=======
+The toolkit also provides stop word lists (words like {\em and}, {\em or}, {\em on}, {\em the} and so on) and improved splicing of natural language sentences into token.
+NLTK however only exist for python, so if we were to write a C version, we would have to port the library, or at least the functionality we use.
+As this is a lot of work to implement, and well beyond the scope of our work here, we have chosen to do the indexing in python and deliver and calculate search results based only on the stemmed forms for the C program.
+
+The indexing is a very slow operation. It is however done very rarely, and only when incorporating new documents (new corpus) into the search results. This operation is in our case not even time critical, so we think it is a fair simplification to leave this job for a faster computer that can run python.
+
+\subsection{Optimized C-port}
+In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds on the cluster. We therefore decided to rewrite the search program using C. This proved it both challenging and useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
+
+Our current implementation caches everything it looks up in memory. We did not have the time to write a proper system for managing the amount of memory consumed by the cache.
+This could lead to out of memory issues, but the internal structures will be within bounds of the size of the postings file, which is by far the most dominant element with regards to memory usage.
+The reader should note that as a consequence, we have to keep an eye on the size of the postings file, so as not to let the nodes run out of memory and crash. We did not run into any problems with this approach in practice, as our corpus is fairly small.
+>>>>>>> 1415363d4005d4a0beccc996bfdc2f5e3d78d2aa
 
 The program reads the dictionary structure into memory on startup. It provides O(1) lookup on query terms in a hash map, using the library {\tt uthash}\cite{uthash}.
 
@@ -202,6 +217,7 @@ The Python code is however detrimental to the performance for the weaker Pi. The
 	C      & 4.78 & 55.93 & 84.75     \\
 	\hline
 	Python & 49.41 & FIND & 2046.77   \\
+
 	\hline
 	\end{tabular}
 	\caption{Runtime (in seconds) for C and Python code on 100,000 queries. OC is the overclocked Pi.}
