@@ -160,10 +160,13 @@ ymin = 0
 After the first phase of testing we can draw some interesting conclusions. With regards to throughput there is a clear point where the system can't keep up with the traffic. At this point the load balancers UDP buffers are filling up and we lose queries.
 
 We verified this by looking at the system network buffers while under load. In Linux, one can look at the buffer status with the command $$netstat -aupn$$, giving something like this:
-\begin{lstlisting}
-Proto Recv Send   Local Addres        Address   PID/
-udp    16356  16356 192.168.0.200:32002  0.0.0.0:*   296/bin/load_distri
+\begin{lstlisting}[caption={Output of {\tt netstat -aupn | grep 32002}},captionpos=b,label={lst:netstat}]
+Proto Recv   Send   Local Addres         Address     PID/name
+udp   163840 163840 192.168.0.200:32002  0.0.0.0:*   296/bin/load_distri
 \end{lstlisting}
+In Listing \ref{lst:netstat} we see that the {\tt Recv} buffer and {\tt Send} buffer are currently containing 163840 bytes.
+The total size of the buffer is given by {\tt /proc/sys/net/core/rmem\_max}. It is listed in bytes and can be modified with a {\tt sysctl} call: {\tt sysctl -w net.core.rmem_max=value}
+As we can see in this example, the buffer is currently maxed out, and all additional packages will be lost.
 
 We also see that the performance quickly diminishes as we increase the load. After the breakpoint, practically no additional queries get answered.
 This is to be expected.
