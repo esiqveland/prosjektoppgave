@@ -164,7 +164,9 @@ As this is a lot of work to implement, and well beyond the scope of our work her
 The indexing is a very slow operation. It is however done very rarely, and only when incorporating new documents (new corpus) into the search results. This operation is in our case not even time critical, so we think it is a fair simplification to leave this job for a faster computer that can run python.
 
 \subsection{Optimized C-port}
-In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds. We therefore decided to rewrite the program using C. This proved it both challenging and useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
+In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds on the cluster. We therefore decided to rewrite the search program using C. This proved it both challenging and useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation. Our current implementation caches everything it looks up in memory. We did not have the time to write a proper system for managing the amount of memory consumed by the cache.
+This could lead to out of memory issues, but the internal structures will be within bounds of the size of the postings file, which is by far the most dominant element with regards to memory usage.
+The reader should not that as a consequence of this, we have to keep an eye on the size of the postings file, so as not to let the nodes run out of memory and crash. We did not run into any problems with this approach in practice, as our corpus is fairly small.
 
 The program reads the dictionary structure into memory on startup. It provides O(1) lookup on query terms in a hash map, using the library {\tt uthash}\cite{uthash}.
 
