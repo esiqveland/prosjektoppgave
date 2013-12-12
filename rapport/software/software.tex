@@ -198,8 +198,8 @@ The rest of the time, the code behaved as expected from one platform to the othe
 For comparison between the two languages, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the Pi, both for Python and {C}.
 The results are given in Table \ref{tbl:runtimes_ports}.
 
-For the relatively quick {Core i5}, the python code need 10 times longer to run the queries than the C code. This difference in performance seem reasonable compared to known sources.
-The Python code is however detrimental to the performance for the weaker Pi. The same 100,000 queries takes 84 seconds to run in C, but takes 24 times longer in python.
+For the relatively quick {Core i5}, the python code need 10 times longer to run the queries than the C code. This difference in performance seem reasonable compared to what is known about the differences between interpreted dynamic languages and C.
+The slower Python code is however detrimental to the performance for the weaker Pi. The same 100,000 queries takes 84 seconds to run in C, but takes close to 2047 seconds in Python, 24 times longer.
 
 \begin{table}[h]
 	\begin{center}
@@ -217,3 +217,4 @@ The Python code is however detrimental to the performance for the weaker Pi. The
 	\label{tbl:runtimes_ports}
 	\end{center}
 \end{table}
+

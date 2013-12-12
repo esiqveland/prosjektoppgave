@@ -44,6 +44,56 @@ Our load generation utility has a few parameters for us to control. The number o
 When comparing on the MacBook, the load generator is run on a Mac Mini and the search program is run, either in one instance to test single core performance, or in two instances to utilize both the cores.
 When running two instances these two operate on different ports.
 
+\subsection{Overclocked Pis}
+Overclocking is the process of making a computer operate at a faster clock rate than the manufacturer intended.
+This is most often done by changing software parameters, typically by increasing the memory frequency, core frequency and/or operating voltage to make it stable at a higher clock rate.
+Side effects of this process is an increase in power consumption and heat dissipation, and in some cases leads to system instability or even permanent damage to the components.
+
+As it turns out every operation in our system is bounded by CPU speed, it would be reasonable to expect enhanced performance by overclocking the CPU.
+The Raspberry PI is very simple to overclock. By editing boot config-file one can easily change the CPU parameters.
+
+This file can be found under:
+
+\begin{lstlisting}
+\boot\config.txt
+\end{lstlisting}
+
+\begin{lstlisting}
+## Some overclocking settings, cpu govenor is set to ondemand
+
+##None
+#arm_freq=700
+#core_freq=250
+#sdram_freq=400
+#over_voltage=0
+
+##Modest
+#arm_freq=800
+#core_freq=300
+#sdram_freq=400
+#over_voltage=0
+
+##High
+#arm_freq=950
+#core_freq=450
+#sdram_freq=450
+#over_voltage=6
+
+##Turbo
+arm_freq=1000
+core_freq=500
+sdram_freq=600
+over_voltage=6
+\end{lstlisting}
+
+We went for the Turbo mode, which is the fastest recommended mode by the creators of Raspberry Pi.
+This mode doubles the memory frequency, and the GPU frequency which also drives the L2 cache for the CPU.
+Doubling the L2 cache frequency is the main reason for this, with synthetic tests showing over 50\% gains in performance\cite{overclock}.
+The L2 cache is really important as it is the main source of caching before the memory.
+
+Unfortunately for us, only 5 of our units were able to run stably at the increased speed.
+We saw both data corruption on the SD card, unable to completely boot.
+
 \clearpage
 \section{Results}
 \label{sec:experiments}
@@ -367,45 +417,7 @@ The Macbook fared similarly. At only around 5500 rps the performance is halved. 
 
 We did expect the cluster to gain some ground when we forced this much disk access. However as the MacBook runs on flash storage with reading speeds of up to 400MB/s and the poor Pis have SD-cards providing 5-8MB/s, the MacBook does have an unfair advantage.
 
-\section{Overclocking}
-Over clocking is the process of making a computer operate at a faster clock rate than the manufacturer intended. This is done by changing software parameters, typically by increasing the operating voltage. Side effects of this process is an increase in power consumption and heat dissipation.
-
-As every operation in our system is bounded by CPU speed, it would be reasonable to expect enhanced performance by over clocking the CPU. The Raspberry PI is very simple to over clock. By editing boot config-file one can easily change the CPU parameters.
-
-This file can be found under:
-
-\begin{lstlisting}
-\boot\config.txt
-\end{lstlisting}
-
-\begin{lstlisting}
-## Some over clocking settings, govenor already set to on demand
-
-##None
-#arm_freq=700
-#core_freq=250
-#sdram_freq=400
-#over_voltage=0
-
-##Modest
-#arm_freq=800
-#core_freq=300
-#sdram_freq=400
-#over_voltage=0
-
-##High
-#arm_freq=950
-#core_freq=450
-#sdram_freq=450
-#over_voltage=6
-
-##Turbo
-arm_freq=1000
-core_freq=500
-sdram_freq=600
-over_voltage=6
-\end{lstlisting}
-
+\section{Overclocked Pis}
 By changing from no over clocking to turbo mode we increase the clock frequency from 700MHz to 1000MHz. We also increase the GPU core frequency which drives the L2 cache.
 
 As mentioned in the hardware section, overclocking the Raspberry PI might bring certain downsides. Users have experienced data corruption on the SD card as well as general instability. There are also reports of different degrees of tolerance among the Raspberry PIs. Some works perfectly under any degree of overclocking while others quickly start showing symptoms of instability.
