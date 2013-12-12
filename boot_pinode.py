@@ -27,6 +27,7 @@ while True:
 
     if hostname[len(hostname)-1] == '0':
         launch_load_distr()
+        launch_search_engine()
     else:
         launch_search_engine()
 
