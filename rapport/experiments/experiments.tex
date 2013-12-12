@@ -81,9 +81,9 @@ From the numbers in Table \ref{tab:cluster_load_dir} we see that there is a clea
 Since the load distributor appears to be a bottleneck in our system, it could be interesting to see how many workers we need to still be able to perform at maximum throughput, i.e. to see how many workers we can drop and still deliver the same amount of work.
 In this experiment we have a look at the CPU utilization and query answer rate of the workers while gradually reducing the amount of workers in the cluster.
 
-As suspected, when shutting down nodes one at a time and plotting performance at peak load, we first see an increase in dropped packets after 2 workers have been removed.
+As suspected, when shutting down nodes one at a time and plotting performance at peak load, we first see an increase in dropped packets after 3 workers have been removed.
 
-The full results are given in Table \ref{tab:clusterreduced}. We see that the cluster could run with 99.7\% of queries answered with 6 instead of 7 workers, and at 97.3\% answered queries with 5. With less than 5 workers, system performance degrades quickly with 78.2\% of queries answered at 4 workers.
+The full results are given in Table \ref{tab:clusterreduced}. We see that the cluster could run with 99.99\% of queries answered with 5 instead of 7 workers, and at 84.78\% answered queries with 4. With less than 3 workers, system performance degrades quickly with 58.91\% of queries answered at 3 workers.
 
 We are quite happy with these results as they show that the work distribution looks fairly even. If we only needed a few nodes to handle the maximum throughput from the load distributor, there would be no use for 8 nodes in the cluster.
 
@@ -150,7 +150,7 @@ One source of error for us is that the resolution on the measuring tool is not v
 We also want to vary the amount of nodes that are active in the cluster and plot performance and power consumption to see how it scales.
 This is one of the more interesting experiments as one of the strengths of this cluster is that it is easy to power down nodes during hours of low load. We did not get to implement this feature, but it can be done. We will also plot the amount of queries we can deliver per watt used with differing numbers of nodes running.
 
-As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase in requests we can service per watt every time we add a node to the cluster. However, since adding any more nodes to the cluster would require a new power supply as well as more network equipment, further scaling would not be very effective, so this is our breakpoint.
+As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase in requests we can service per watt every time we add a node to the cluster until we reach five workers. At this point the load distributor is at max capacity and we are unable to utilize the works fully. 
 
 \begin{figure}[!h]
 \centering
@@ -259,14 +259,14 @@ We will run the same test as in phase 1 where we try to find the breakpoint for 
 \label{tab:cluster_worker_req_watt}
 \end{table}
 
-As we can see in Table \ref{tab:cluster_worker_req_watt} we are able to achieve 181 requests per second per watt.
-This is an increase of 20\%. This is of course mostly due to having an additional worker pulling its weight, but we are also able to push each individual node harder without the load balancer in place.
+As we can see in Table \ref{tab:cluster_worker_req_watt} we are able to achieve 242 requests per second per watt.
+This is an increase of 54\%. This follows now utilizing all the workers fully as well as having one extra worker pulling its weight instead of doing load distribution.
 
 \subsubsection{Discussion}
 When skipping the load distributor and using only worker nodes we see that it performs better, and a linear increase in performance is indeed observed.
-We are now able to service up to around 5000 queries per second. This is an 13\% increase from the 7 workers plus 1 load distributer.
+We are now able to service up to around 6500 queries per second. This is an 52.6\% increase from the 7 workers plus 1 load distributer.
 Along with the increase in maximum performance we also see that it behaves a lot better under higher loads.
-If we compare the two methods we see that at around 6800 requests per second the load balancer is only able to serve around half its requests, while the cluster is answering 98\% of the requests without the load distributor.
+If we compare the two methods we see that at around 5600 requests per second the load balancer is only able to serve around half its requests, while the cluster is answering 100\% of the requests without the load distributor.
 
 \subsection{Mac VS Cluster of PIs}
 In this section we will explore how our system performs compared to a MacBook Pro running the same software. We will again try to find the breakpoints of how much traffic the MacBook can handle and how efficient it can serve the requests. We test in two rounds. First only using 1 search process on the MacBook. This would then not utilize both cores on the CPU. Then we run two processes simultaneously and see how well that performs. We will also measure the power consumption on the mac under both idle and heavy load.
