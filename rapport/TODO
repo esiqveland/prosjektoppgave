@@ -4,6 +4,7 @@ ideas:
 
 abstract:
 siste setning, var sikker på om vi kan si peak load er promising eller om det er failure.
+[Done ish]
 
 fikse engelsk tallsystem (komma på lange tall for å skille tusinger)
 
@@ -21,6 +22,7 @@ figure 14:
 
 results: mac vs pi:
     brukt kraftigere pc for å teste begge kjernekjøring av search_bin på mac.
+
 
 experiments.experiences with C and Python
     FIX TABLE LOOK
