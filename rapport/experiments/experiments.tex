@@ -223,8 +223,8 @@ We are now able to service up to around 6500 queries per second. This is an 52.6
 Along with the increase in maximum performance we also see that it behaves a lot better under higher loads.
 If we compare the two methods we see that at around 5600 requests per second the load balancer is only able to serve around half its requests, while the cluster is answering 100\% of the requests without the load distributor.
 
-\subsection{Mac VS Cluster of PIs}
-In this section we will explore how our system performs compared to a MacBook Pro running the same software. We will again try to find the breakpoints of how much traffic the MacBook can handle and how efficient it can serve the requests. We test in two rounds. First only using 1 search process on the MacBook. This would then not utilize both cores on the CPU. Then we run two processes simultaneously and see how well that performs. We will also measure the power consumption on the mac under both idle and heavy load.
+\subsection{Mac VS Cluster of Pis}
+In this section we will explore how our system performs compared to a MacBook Pro running the same software. We will try to find the breakpoints of how much traffic the MacBook can handle and how efficient it can serve the requests. We test in two rounds. First only using 1 search process on the MacBook. This would then not utilize both cores on the CPU. Then we run two instances of the program simultaneously and see how well that performs. We will also measure the power consumption on the Mac under both idle various loads.
 
 \subsubsection{Maximum throughput}
 Running with one core we found the maximum throughput to at around 16000 requests per second. We were unable to pinpoint the exact breakpoint because of limits with small amount of time we can sleep a thread. This is almost three times the performance of the cluster.
@@ -232,8 +232,8 @@ Running with one core we found the maximum throughput to at around 16000 request
 However this was to be expected with so much more powerful hardware. With two processes running we were able to push it up to 23577 requests per second. At this point we are pushing the limits of what both the network and the MacBook can handle.
 
 \subsubsection{Energy}
-Unlike the Raspberry PIs the MacBook really has a lot of power management built into it. We have measured it running idle at around 14 Watts and managed to push it up to 29 Watts while serving requests.
-We also see that how many requests we send to it reflect in the amount of power it consumes. The results of this test can be found in Table \ref{tab:mac_energy_1core} and Table \ref{tab:mac_energy_2core}.
+Unlike the Raspberry Pis the MacBook has a lot of power management built into it. We have measured it running idle at around 14 Watts and managed to push it up to 29 Watts while serving requests.
+We also see that how many requests we send to it reflect the amount of power it consumes. The results of these tests can be found in Table \ref{tab:mac_energy_1core} and Table \ref{tab:mac_energy_2core}.
 
 \begin{table}
 	\pgfplotstableread{../datasets/mac_energy_1core.txt}
@@ -271,14 +271,14 @@ We also see that how many requests we send to it reflect in the amount of power 
 \label{tab:mac_energy_2core}
 \end{table}
 
-It is apparent that under maximum load not surprisingly there is no way the Pis can contest the MacBook Pro on anything other that startup cost price.
+It is apparent that under maximum load there is no way the Pis can contest the MacBook Pro on anything other that startup cost price.
 However it is interesting to see how our system compares on lower request rates compared to the MacBook. 
-At request rates that are within the limits of our system, the system performs comparable to the MacBook. One could argue that the cost of a MacBook Pro system is comparable when comparing performance. A MacBook Pro runs at about 4 times what it cost to build the cluster. It is apparent however that we could never match the MacBook on power efficiency.
+At request rates that are within the limits of our system, the system performs comparable to the MacBook. One could argue that the cost of a MacBook Pro system is comparable regarding performance. A MacBook Pro runs at about 4 times what it cost to build the cluster. It is however apparent that we could never match the MacBook on power efficiency for CPU intensive work.
 
 \subsubsection{Cold reads}
-All the other experiments have been performed on the cluster or MacBook Pro after a significant number of queries already has been answered. This ensured replicate-able results as we assume most the query words are already in memory and cache. However it would be interesting to see how the two compares when answering queries right after a reboot. In this experiment we send 5000 queries to each core operating, so in total 10000 for the MacBook and 40000 for the cluster. We then try pinpoint the breakpoint where the machines are unable to keep up with the load. The Pi cluster is run in the mode where all nodes are workers.
+All the other experiments have been performed on the cluster or MacBook Pro after a significant number of queries already has been answered. This ensured reproducible results as we assume most of the query words are already in memory and cache. However it would be interesting to see how the two compare when answering queries right after a reboot.  In this experiment we send 5000 queries to each core operating, so in total 10000 for the MacBook and 40000 for the cluster. We then try pinpoint the breakpoint where the machines are unable to keep up with the load. The Pi cluster is run in the mode where all nodes are workers.
 
-When measuring these numbers we ran into some interesting problems. For one, the sleep system call we use to limit the interval between queries is limited at milliseconds. This turned out to be a problem for measuring the performance of the MacBook Pro as its breakpoint lies somewhere between the minimum sleep duration and no sleep duration. This is reflected in table\ref{tab:coldread_mac} where we have a gap between a load we clearly can support and a load we clearly cannot support.
+When measuring these numbers we ran into an interesting problem. The resolution of the sleep system call we use to time the interval queries is limited at milliseconds. This turned out to be a problem for accurately measuring the performance of the MacBook Pro as its breakpoint lies somewhere between the minimum sleep duration and no sleep duration. This is reflected in table\ref{tab:coldread_mac} where we have a gap between a load we clearly can support and a load we clearly cannot support.
 
 \begin{table}[h]
 	\pgfplotstableread{../datasets/coldread_pi.txt}
@@ -289,10 +289,10 @@ When measuring these numbers we ran into some interesting problems. For one, the
      	every head row/.style={after row=\hline},
 		every last row/.style={after row=\hline},
 		columns/orps/.style={column name=Queries per second},
-		columns/oanswers/.style={column name=received(\%)},
+		columns/oanswers/.style={column name=\% queries served},
      	]
     {\coldreadpi}
-    \caption{Cold reads Pi cluster. Queries per second, and results received in \%.}
+    \caption{Cold reads for the Pi cluster.}
 \label{tab:coldread_pi}
 \end{table}
 
@@ -306,29 +306,72 @@ When measuring these numbers we ran into some interesting problems. For one, the
      	every head row/.style={after row=\hline},
 		every last row/.style={after row=\hline},
 		columns/orps/.style={column name=Queries per second},
-		columns/oanswers/.style={column name=received(\%)},
+		columns/oanswers/.style={column name=\% queries served},
      	]
     {\coldreadmac}
-    \caption{Cold reads MacBook. Queries per second, and results received in \%.}
+    \caption{Cold reads for MacBook.}
 \label{tab:coldread_mac}
 \end{table}
 
-Without optimization the Pi cluster is able to support around 4425 queries per second. This is 67\% of the load it can handle after it has been running for a while.
+The Pi cluster is able to support about 4400 queries per second. This is 67\% of the peak load it can handle after a hot start.
 
-The MacBook Pro performed worse. At only around 8000 queries per second the MacBook is severely crippled by all the disk access. 
+The MacBook Pro loses a lot more performance. At only around 8000 queries per second the MacBook is severely crippled by the cold start. 
 
-We did expect the cluster to gain some ground when we forced this much disk access. We believe this is mostly due to the Pis parallel disk access. It is also worth noting that the MacBook Pro is benchmarked with random reads at around 45.7MB/s and sequential reads at 450MB/s. The Raspberry Pis can perform random reads at approximately 2.9-7MB/s and sequential reads at approximately 17MB/s
+We did expect the cluster to gain some ground when we forced this much disk access. We believe this is mostly due to the Pis parallel disk access. It is also worth noting that the MacBook Pro is benchmarked with random reads at around 45.7MB/s and sequential reads at 450MB/s. The Raspberry Pis can perform random reads at approximately 3MB/s and sequential reads at approximately 17MB/s
 
 
 \subsection{Overclocked Pis}
-As it turns out every operation in our system is bounded by CPU speed, it would be reasonable to expect enhanced performance by overclocking the CPU.
-By changing from no over clocking to turbo mode we increase the clock frequency from 700MHz to 1000MHz. We also increase the GPU core frequency which drives the L2 cache.
+As it turns out every operation in our system is bounded by CPU speed, it would be reasonable to expect enhanced performance by overclocking the CPU of the Raspberry Pis.
+By changing from no overclocking to turbo mode we increase the clock frequency from 700MHz to 1000MHz. We also increase the GPU core frequency which drives the L2 cache.
 
-As mentioned in the hardware section, overclocking the Raspberry PI might bring certain downsides. Users have experienced data corruption on the SD card as well as general instability. There are also reports of different degrees of tolerance among the Raspberry PIs. Some works perfectly under any degree of overclocking while others quickly start showing symptoms of instability.
+As mentioned in the hardware section, overclocking the Raspberry Pi might bring certain downsides. Users have experienced data corruption on the SD card as well as general instability. There are also reports of different degrees of overclocking tolerance among the Raspberry Pis. Some work perfectly under high degrees of overclocking, while others quickly start showing symptoms of instability.
 
-We started out by overclocking one node and then run some tests. Everything seemed to work, so we added the overclocking parameters to the entire cluster. After then rebooting the cluster we experienced all the problems mentioned above. One node had problems with its SD-card and two others were struggling with booting or network access. We did however manage to find a stable set of five nodes to compare with our existing results. In this experiment we ran five individual workers similarly to when we tried to pin point the maximum performance of the cluster with various amounts of nodes.
+We started out by overclocking one node and then run the tests. Everything seemed to work, so we added the overclocking parameters to the entire cluster. After rebooting the cluster we experienced all the problems mentioned above. One node had problems with its SD-card and two others were struggling with booting or network access. We did however manage to find a stable set of five nodes to compare with our existing results. In this experiment we ran five individual workers similarly to when we tried to pin point the maximum performance of the cluster with various amounts of nodes.
 
-We were able to see an increase in throughput of around 10\% with the cores overclocked. This number was a lot lower than expected taking into account that the cluster was using 21 watts compared to 16 without the overclock. At this rate the cluster can deliver 133 requests per watt, compared to 152 without the overclock. So this was generally bad value.
+\begin{table}[h]
+	\pgfplotstableread{../datasets/oc_one_core.txt}
+	\oconecore
+	\centering
+
+	\pgfplotstabletypeset[
+     	columns={request, clock, gain},
+     	every head row/.style={after row=\hline},
+		every last row/.style={after row=\hline},
+		columns/request/.style={column name=Queries per second},
+		columns/clock/.style={column name=Clock(MHz)},
+		columns/gain/.style={column name=Gain(\%)},
+     	]
+    {\oconecore}
+    \caption{Performance increase by overclocking one node}
+\label{tab:oconecore}
+\end{table}
+
+\begin{table}[h]
+	\pgfplotstableread{../datasets/oc_one_core.txt}
+	\oconecore
+	\centering
+
+	\pgfplotstabletypeset[
+     	columns={request, clock, gain},
+     	every head row/.style={after row=\hline},
+		every last row/.style={after row=\hline},
+		columns/request/.style={column name=Queries per second},
+		columns/clock/.style={column name=Clock(MHz)},
+		columns/gain/.style={column name=Gain(\%)},
+     	]
+    {\oconecore}
+    \caption{Performance increase by overclocking one node}
+\label{tab:oconecore}
+\end{table}
+
+From table \ref{tab:oconecore} we see that we were able to increase the performance of one node by as much as 60\%. If we 
+
+
+
+
+
+
+We were able to see an increase in throughput of around 42\% with the cores overclocked. This number was a lot lower than expected taking into account that the cluster was using 21 watts compared to 16 without the overclock. At this rate the cluster can deliver 133 requests per watt, compared to 152 without the overclock. So this was generally bad value.
 
 
 \subsection{Experiences with {C} and Python}
