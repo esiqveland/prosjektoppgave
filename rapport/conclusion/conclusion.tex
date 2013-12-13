@@ -2,13 +2,17 @@
 \clearpage
 \section{Future work}
 \label{sec:future}
-For future work it would be interesting to see more IO intensive workloads used, such as those employed by Andersen et al.\cite{fawn} or from a larger corpus that nowhere near can fit in RAM.
-Our cold read results from Section \ref{sec:coldread}, that are more like random access reads, show a very close gap compared to the other work environments we tested, and seem to warrant further work.
+For future work it would be interesting to see more IO intensive workloads used, such as those employed by Andersen et al.\cite{fawn} or loads from a larger corpus that does not fit in RAM.
+Our cold read results from Section \ref{sec:coldread}, that are more like random access reads, show a much closer gap compared to the other work conditions we tested, and seem to warrant further work.
 For further work we would like to run more IO focused operations to see if we can reproduce their findings with an ARM based CPU, as theirs were X86 based.
 
 It would also be interesting to explore some intensive data manipulation work, such as MapReduce type operations.
 Work has been done on this, but it was for the Java based Hadoop suite, which these machines seem a little too small for with the limited amount of memory, and the results are reflecting this.
 
 \clearpage
-\section{Conclusions}
+\section{Conclusion}
 \label{sec:conclusion}
+Our system shows that for low intensity CPU workloads, small embedded hardware could provide energy efficient massive parallel reads, even within an order of magnitude of modern day SSDs.
+For our system, we managed to serve queries at a rate of 350 queries per Joule, where as the modern day dual core i5 with a high cost SSD ended up at 842 queries per Joule.
+This shows that there is potential for disk heavy access work being handled by these nodes, however, if work turns towards the CPU intensive, our system quickly loses its usefulness.
+
