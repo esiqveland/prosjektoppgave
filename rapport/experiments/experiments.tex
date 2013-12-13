@@ -279,16 +279,9 @@ However it is interesting to see how our system compares on lower request rates 
 At request rates that are within the limits of our system, the system performs comparable to the MacBook. One could argue that the cost of a MacBook Pro system is comparable regarding performance. A MacBook Pro runs at about 4 times what it cost to build the cluster. It is however apparent that we could never match the MacBook on power efficiency for CPU intensive work.
 
 \subsubsection{Cold reads}
-All the other experiments have been performed on the cluster or MacBook Pro after a significant number of queries already has been answered. This ensured reproducible results as we assume most of the query words are already in memory and cache. However it would be interesting to see how the two compare when answering queries right after a reboot.  In this experiment we send 5000 queries to each core operating, so in total 10000 for the MacBook and 40000 for the cluster. We then try pinpoint the breakpoint where the machines are unable to keep up with the load. The Pi cluster is run in the mode where all nodes are workers.
-=======
-It is apparent that under maximum load not surprisingly there is no way the Pis can contest the MacBook Pro on anything other that startup cost price.
-However it is interesting to see how our system compares on lower request rates compared to the MacBook.
-At request rates that are within the limits of our system, the system performs comparable to the MacBook. One could argue that the cost of a MacBook Pro system is comparable when comparing performance. A MacBook Pro runs at about 4 times what it cost to build the cluster. It is apparent however that we could never match the MacBook on power efficiency.
-
-\subsubsection{Cold reads}
 \label{sec:coldread}
-All the other experiments have been performed on the cluster or MacBook Pro after a significant number of queries already has been answered. This ensured replicatable results as we assume most the query words are already in memory and cache. However it would be interesting to see how the two compares when answering queries right after a reboot. In this experiment we send 5000 queries to each core operating, so in total 10000 for the MacBook and 40000 for the cluster. We then try pinpoint the breakpoint where the machines are unable to keep up with the load. The Pi cluster is run in the mode where all nodes are workers.
->>>>>>> 6cf1f420deb2dcad2d4369c537542aa611d1d583
+
+All the other experiments have been performed on the cluster or MacBook Pro after a significant number of queries already has been answered. This ensured reproducible results as we assume most of the query words are already in memory and cache. However it would be interesting to see how the two compare when answering queries right after a reboot.  In this experiment we send 5000 queries to each core operating, so in total 10000 for the MacBook and 40000 for the cluster. We then try pinpoint the breakpoint where the machines are unable to keep up with the load. The Pi cluster is run in the mode where all nodes are workers.
 
 When measuring these numbers we ran into an interesting problem. The resolution of the sleep system call we use to time the interval queries is limited at milliseconds. This turned out to be a problem for accurately measuring the performance of the MacBook Pro as its breakpoint lies somewhere between the minimum sleep duration and no sleep duration. This is reflected in table\ref{tab:coldread_mac} where we have a gap between a load we clearly can support and a load we clearly cannot support.
 
