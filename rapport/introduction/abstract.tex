@@ -4,5 +4,5 @@ In this project we have taken taken a look on how a cluster of Raspberry Pi comp
 
 We have written the search engine as well as the programs needed to balance load and generate traffic. All code running on the Raspberry Pis is written in C for optimal performance.
 
-Through our implementation and testing we have found that our relatively cheap system achieves comparable results with a newer MacBook Pro with regards to energy efficiency and performance at lower work loads. It also shows promising results at peak load, but our workload proved too CPU bound to explore this fully.   
+Through our implementation and testing we have found that our relatively cheap system achieves comparable results with a newer MacBook Pro with regards to energy efficiency and performance at lower work loads. At peak load however, the small computers can not keep up in neither workload nor power efficiency. The Raspberry Pis showed a peak efficiency of 242 queries per Joule, where as the i5 maxed out at about 710 queries per Joule for 1 core, and 842 for max load on 2 cores.
 \end{abstract}

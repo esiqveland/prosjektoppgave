@@ -7,6 +7,3 @@ requests	received	reqwatt	reqwatt
 24281		95.02		28      824.00
 27237		71.10		29	667.75
 
-
-
-
