@@ -130,6 +130,7 @@ As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase
 
 \begin{figure}[!h]
 \centering
+
 	\begin{tikzpicture}
 	\pgfplotstableread{../datasets/cluster_load_dist_request_watt_per_node.txt}\loadwattreq
 	
@@ -145,11 +146,13 @@ As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase
 	\begin{axis}
 	[
 	xlabel = request rate,
-	xmax = 5000,
+	xmax = 10000,
 	xmin = 0,
 	ylabel = Queries per Watt (w),
 	ymax = 1000,
-	ymin = 0
+	ymin = 0,
+	width = 450,
+	height = 250,
 	]
 	\addplot table[x = request, y = reqwatt] from \loadwattreq ;
 	\addlegendentry{LoadDist} ;
