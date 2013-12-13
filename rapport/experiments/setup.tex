@@ -90,6 +90,9 @@ This mode increases the memory frequency by 50\%.  With {\tt core\_freq} set to 
 Doubling the L2 cache frequency is the main reason we chose Turbo mode, with synthetic tests showing over 50\% gains in performance\cite{overclock} from this overclock.
 The L2 cache is really important as it is the main source of caching before the memory.
 
+After setting the new clock frequencies, it can be verified that it is working. To verify, set the CPU to do some heavy work that requires 100\% CPU time.
+While this program is running, read the file {\tt /sys/devices/system/cpu/cpu0/cpufreq/scaling\_cur\_freq} to get the current frequency that the processor is running at, verifying that the new settings are in place.
+
 Unfortunately for us, only 5 of our units were able to run stable at the increased speed.
 We saw both data corruption on the SD card, unable to completely boot, and general random runtime errors from three of the boards.
 We therefore chose to do the overclocked tests with only 5 workers, seeing as the performance scales fairly linearly in our cases.
