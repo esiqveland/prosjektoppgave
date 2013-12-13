@@ -15,7 +15,7 @@ We do this first by sending queries through a proxy of sorts, the load distribut
 Later, we look at exposing direct worker access at the client.
 
 \subsubsection{1 load distributor and 7 workers}
-From the numbers in Table \ref{tab:cluster_load_dir} we see that there is a clear drop in performance at around 4300 requests per second. If we increase the load from this point we see a drastic loss in received responses. At this rate the load distributor is running on close to 100\% CPU while the workers are running at around 80\%. So we have reason to believe that the load distributor is holding back the system, effectively being the bottleneck.
+From the numbers in Table \ref{tab:cluster_load_dir} we see that there is a clear drop in performance at around 4300 requests per second. If we increase the load from this point we see a drastic loss in received responses. At this rate the load distributor is running on close to 100\% CPU while the workers are running at around 60\%. So we have reason to believe that the load distributor is holding back the system, effectively being the bottleneck.
 
 \pgfplotstableread{../datasets/cluster_load_dir_requests.txt}\clusterloaddir
 \begin{table}[h]
@@ -125,7 +125,7 @@ As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase
 	\addplot table[y = reqwatt] from \clusterreqwattnode ;
 	\end{axis}
 	\end{tikzpicture}
-	\caption{Plot showing the }
+	\caption{Plot showing the number of queries we can service per watt with number of workers increasing}
 \end{figure}
 
 \begin{table}
@@ -211,7 +211,7 @@ We will run the same test as in phase 1 where we try to find the breakpoint for 
 		columns/reqwatt/.style={column name=Queries per watt},
      	]
     {\clusterworkerreqwatt}
-    \caption{Efficiency with various nodes without load balancer}
+    \caption{Efficiency with various nodes without load balancer. We see that after adding 5 workers, theres no benefit in adding any more.}
 \label{tab:cluster_worker_req_watt}
 \end{table}
 

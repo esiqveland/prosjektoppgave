@@ -13,10 +13,11 @@ optimize c-port:
 
 results:
     finn cpuload ved breakpoint med 1 load distr, kap 7.1.1
+[Done]
 
 figure 14:
 	poengtere diminishing returns etter breakpoint.
-
+[Done]
 
 results: mac vs pi:
     brukt kraftigere pc for å teste begge kjernekjøring av search_bin på mac.
