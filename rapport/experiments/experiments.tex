@@ -273,14 +273,12 @@ We also see that how many requests we send to it reflect the amount of power it 
 \label{tab:mac_energy_2core}
 \end{table}
 
-<<<<<<< HEAD
 It is apparent that under maximum load there is no way the Pis can contest the MacBook Pro on anything other that startup cost price.
-However it is interesting to see how our system compares on lower request rates compared to the MacBook. 
+However it is interesting to see how our system compares on lower request rates compared to the MacBook.
 At request rates that are within the limits of our system, the system performs comparable to the MacBook. One could argue that the cost of a MacBook Pro system is comparable regarding performance. A MacBook Pro runs at about 4 times what it cost to build the cluster. It is however apparent that we could never match the MacBook on power efficiency for CPU intensive work.
 
 \subsubsection{Cold reads}
 \label{sec:coldread}
-
 All the other experiments have been performed on the cluster or MacBook Pro after a significant number of queries already has been answered. This ensured reproducible results as we assume most of the query words are already in memory and cache. However it would be interesting to see how the two compare when answering queries right after a reboot.  In this experiment we send 5000 queries to each core operating, so in total 10000 for the MacBook and 40000 for the cluster. We then try pinpoint the breakpoint where the machines are unable to keep up with the load. The Pi cluster is run in the mode where all nodes are workers.
 
 When measuring these numbers we ran into an interesting problem. The resolution of the sleep system call we use to time the interval queries is limited at milliseconds. This turned out to be a problem for accurately measuring the performance of the MacBook Pro as its breakpoint lies somewhere between the minimum sleep duration and no sleep duration. This is reflected in table\ref{tab:coldread_mac} where we have a gap between a load we clearly can support and a load we clearly cannot support.
@@ -320,7 +318,7 @@ When measuring these numbers we ran into an interesting problem. The resolution 
 
 The Pi cluster is able to support about 4400 queries per second. This is 67\% of the peak load it can handle after a hot start.
 
-The MacBook Pro loses a lot more performance. At only around 8000 queries per second the MacBook is severely crippled by the cold start. 
+The MacBook Pro loses a lot more performance. At only around 8000 queries per second the MacBook is severely crippled by the cold start.
 
 
 We did expect the cluster to gain some ground when we forced this much disk access. We believe this is mostly due to the Pis parallel disk access. It is also worth noting that the MacBook Pro is benchmarked with random reads at around 45.7MB/s and sequential reads at 450MB/s. The Raspberry Pis can perform random reads at approximately 3MB/s and sequential reads at approximately 17MB/s
@@ -371,15 +369,8 @@ We started out by overclocking one node and then run the tests. Everything seeme
 \label{tab:occluster}
 \end{table}
 
-From table \ref{tab:oconecore} we see that we were able to increase the performance of one node by as much as 60\%. For the cluster of 5 nodes we were able to get an increase in performance of almost 60\%. This also includes an increase in requests per watt by 40\%
 
-
-
-
-
-
-We were able to see an increase in throughput of around 42\% with the cores overclocked. This number was a lot lower than expected taking into account that the cluster was using 21 watts compared to 16 without the overclock. At this rate the cluster can deliver 133 requests per watt, compared to 152 without the overclock. So this was generally bad value.
-
+From table \ref{tab:oconecore} we see that we were able to increase the performance of one node by as much as 60\%. For the cluster of 5 nodes we were able to get an increase in performance of almost 60\%. This also includes an increase in requests per watt by 40\%.
 
 \subsection{Experiences with {C} and Python}
 The first testings of the C-port showed significant improvements in delivery speed.
