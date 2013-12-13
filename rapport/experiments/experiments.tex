@@ -2,7 +2,9 @@
 \section{Results}
 \label{sec:experiments}
 
-Here follows our results from the testing.
+Here follows the results from our testing.
+
+All our results are gathered from a "hot" running system, except for the cold read part in Section \ref{sec:coldread}, that explores newly booted systems with no prior queries.
 
 \subsection{Maximum throughput}
 We started out by looking at how many queries we could answer with the cluster, i.e. maximum throughput.
@@ -275,6 +277,7 @@ However it is interesting to see how our system compares on lower request rates 
 Request rates that are within the limits of our system, the system surprisingly performs comparable to the MacBook.
 
 \subsubsection{Cold reads}
+\label{sec:coldread}
 While all the other experiments have been performed on the cluster after a significant number of queries already has been answered. This ensured replicate-able results as we assume most the query words are already in memory and cache. However it would be interesting to see how the two compares when answering queries right after a reboot. In this experiment we send 5000 queries to each core operating, so in total 10000 for the MacBook and 40000 for the cluster. We then try pinpoint the breakpoint where the machines are unable to keep up with the load. The Pi cluster is run in the mode where all nodes are workers.
 
 When measuring these numbers we ran into some interesting problems. For one, the sleep system call we use to limit the interval between queries is limited at milliseconds. This turned out to be a problem for measuring the performance of the MacBook Pro as its breakpoint lies somewhere between the minimum sleep duration and no sleep duration. This is reflected in table\ref{tab:coldread_mac} where we have a gap between a load we clearly can support and a load we clearly cannot support.
