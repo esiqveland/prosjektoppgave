@@ -141,9 +141,6 @@ As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase
 	\pgfplotstableread{../datasets/mac_energy_2core.txt}\mactwocore
 
 	\pgfplotstableread{../datasets/req_comp_pi.txt}\reqcomppi
-	
-	
-
 
 	\begin{axis}
 	[
@@ -403,7 +400,7 @@ We started out by overclocking one node and then run the tests. Everything seeme
      	columns={request, received, watt, reqwatt},
      	every head row/.style={after row=\hline},
 		every last row/.style={after row=\hline},
-		columns/requests/.style={column name=Queries per second},
+		columns/request/.style={column name=Queries per second},
 		columns/received/.style={column name=\% queries served},
 		columns/watt/.style={column name=Watt},
 		columns/reqwatt/.style={column name=Queries per watt},
@@ -414,7 +411,7 @@ We started out by overclocking one node and then run the tests. Everything seeme
 \end{table}
 
 
-From table \ref{tab:oconecore} we see that we were able to increase the performance of one node by as much as 60\%. For the cluster of 5 nodes we were able to get an increase in performance of almost 60\%. This also includes an increase in requests per watt by 40\%.
+From table \ref{tab:oconecore} we see that we were able to increase the performance of one node by as much as 60\%. For the cluster of 5 nodes we were able to get an increase in performance of almost 60\%. This also includes an increase in requests per watt by 40\%. These results certainly shows how limited we are by the CPU on the Pis. 
 
 \subsection{Experiences with {C} and Python}
 The first testings of the C-port showed significant improvements in delivery speed.
@@ -435,7 +432,7 @@ The slower Python code is however detrimental to the performance for the weaker 
     \begin{center}
     \begin{tabular}{|r|r|r|r|}
     \hline
-       & \multicolumn{1}{|c|}{MacBook} & \multicolumn{1}{|c|}{PI (OC)}  & \multicolumn{1}{|c|}{PI} \\
+       & \multicolumn{1}{|c}{MacBook} & \multicolumn{1}{|c|}{PI (OC)}  & \multicolumn{1}{|c|}{PI} \\
     \hline
     C      & 4.78 & 55.93 & 84.75     \\
     \hline
