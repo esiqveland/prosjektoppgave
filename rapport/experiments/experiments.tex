@@ -177,7 +177,7 @@ This was implemented by having one thread in the client for each node in the clu
 \pgfplotstableread{../datasets/cluster_only_workers_requests.txt}\clusteronlyworkers
 \begin{table}
 	\centering
-	\caption{Maximum throughput without load distributor}
+	
 	\pgfplotstabletypeset[
      	columns={requests, received},
      	every head row/.style={before row=\hline,
@@ -187,6 +187,7 @@ This was implemented by having one thread in the client for each node in the clu
 		columns/received/.style={column name=\% queries served},
      	]
     {\clusteronlyworkers}
+    \caption{Maximum throughput with 8 workers}
 \label{tab:cluster_only_workers}
 \end{table}
 
@@ -200,8 +201,7 @@ We will run the same test as in phase 1 where we try to find the breakpoint for 
 	\centering
 	\pgfplotstabletypeset[
      	columns={nodes,requests, watt, reqwatt},
-     	every head row/.style={before row=\hline,
-     	after row=\hline},
+     	every head row/.style={after row=\hline},
 		every last row/.style={after row=\hline},
 		columns/nodes/.style={column name=Active nodes},
 		columns/requests/.style={column name=Queries per second},
@@ -227,11 +227,12 @@ If we compare the two methods we see that at around 5600 requests per second the
 In this section we will explore how our system performs compared to a MacBook Pro running the same software. We will again try to find the breakpoints of how much traffic the MacBook can handle and how efficient it can serve the requests. We test in two rounds. First only using 1 search process on the MacBook. This would then not utilize both cores on the CPU. Then we run two processes simultaneously and see how well that performs. We will also measure the power consumption on the mac under both idle and heavy load.
 
 \subsubsection{Maximum throughput}
-Running with one core we found the maximum throughput to at around 11000 requests per second. Over double the amount that of the cluster.
-However this was to be expected with so much more powerful hardware. With two processes running we were able to push it up to 12700 requests per second. At this point we are pushing the limits of what both the network and the MacBook can handle.
+Running with one core we found the maximum throughput to at around 16000 requests per second. We were unable to pinpoint the exact breakpoint because of limits with small amount of time we can sleep a thread. This is almost three times the performance of the cluster.
+
+However this was to be expected with so much more powerful hardware. With two processes running we were able to push it up to 23577 requests per second. At this point we are pushing the limits of what both the network and the MacBook can handle.
 
 \subsubsection{Energy}
-Unlike the Raspberry PIs the MacBook really has a lot of power management built into it. We have measured it running idle at around 18 Watts and managed to push it up to 28 Watts while serving requests.
+Unlike the Raspberry PIs the MacBook really has a lot of power management built into it. We have measured it running idle at around 14 Watts and managed to push it up to 29 Watts while serving requests.
 We also see that how many requests we send to it reflect in the amount of power it consumes. The results of this test can be found in Table \ref{tab:mac_energy_1core} and Table \ref{tab:mac_energy_2core}.
 
 \begin{table}
@@ -239,16 +240,16 @@ We also see that how many requests we send to it reflect in the amount of power 
 	\macenenrgyonecore
 	\centering
 	\pgfplotstabletypeset[
-     	columns={requests, watt, reqwatt},
-     	every head row/.style={before row=\hline,
-     	after row=\hline},
+     	columns={requests, received, watt, reqwatt},
+     	every head row/.style={after row=\hline},
 		every last row/.style={after row=\hline},
 		columns/requests/.style={column name=Queries per second},
+		columns/received/.style={column name=\% queries served},
 		columns/watt/.style={column name=Watt},
 		columns/reqwatt/.style={column name=Queries per watt},
      	]
     {\macenenrgyonecore}
-    \caption{Mac efficiency 1 core}
+    \caption{MacBook Pro performance and efficiency running on 1 core}
 \label{tab:mac_energy_1core}
 \end{table}
 
@@ -257,25 +258,25 @@ We also see that how many requests we send to it reflect in the amount of power 
 	\macenergytwocore
 	\centering
 	\pgfplotstabletypeset[
-     	columns={requests, watt, reqwatt},
-     	every head row/.style={before row=\hline,
-     	after row=\hline},
+     	columns={requests, received, watt, reqwatt},
+     	every head row/.style={after row=\hline},
 		every last row/.style={after row=\hline},
 		columns/requests/.style={column name=Queries per second},
+		columns/received/.style={column name=\% queries served},
 		columns/watt/.style={column name=Watt},
 		columns/reqwatt/.style={column name=Queries per watt},
      	]
     {\macenergytwocore}
-    \caption{Mac efficiency, program running on 2 cores}
+    \caption{MacBook Pro performance and efficiency running on 2 cores}
 \label{tab:mac_energy_2core}
 \end{table}
 
-It is apparent that under maximum load not surprisingly there is no way the PI Cluster can contest the MacBook Pro other price.
-However it is interesting to see how our system compares on lower request rates compared to the MacBook.
-Request rates that are within the limits of our system, the system surprisingly performs comparable to the MacBook.
+It is apparent that under maximum load not surprisingly there is no way the Pis can contest the MacBook Pro on anything other that startup cost price.
+However it is interesting to see how our system compares on lower request rates compared to the MacBook. 
+At request rates that are within the limits of our system, the system performs comparable to the MacBook. One could argue that the cost of a MacBook Pro system is comparable when comparing performance. A MacBook Pro runs at about 4 times what it cost to build the cluster. It is apparent however that we could never match the MacBook on power efficiency.
 
 \subsubsection{Cold reads}
-While all the other experiments have been performed on the cluster after a significant number of queries already has been answered. This ensured replicate-able results as we assume most the query words are already in memory and cache. However it would be interesting to see how the two compares when answering queries right after a reboot. In this experiment we send 5000 queries to each core operating, so in total 10000 for the MacBook and 40000 for the cluster. We then try pinpoint the breakpoint where the machines are unable to keep up with the load. The Pi cluster is run in the mode where all nodes are workers.
+All the other experiments have been performed on the cluster or MacBook Pro after a significant number of queries already has been answered. This ensured replicate-able results as we assume most the query words are already in memory and cache. However it would be interesting to see how the two compares when answering queries right after a reboot. In this experiment we send 5000 queries to each core operating, so in total 10000 for the MacBook and 40000 for the cluster. We then try pinpoint the breakpoint where the machines are unable to keep up with the load. The Pi cluster is run in the mode where all nodes are workers.
 
 When measuring these numbers we ran into some interesting problems. For one, the sleep system call we use to limit the interval between queries is limited at milliseconds. This turned out to be a problem for measuring the performance of the MacBook Pro as its breakpoint lies somewhere between the minimum sleep duration and no sleep duration. This is reflected in table\ref{tab:coldread_mac} where we have a gap between a load we clearly can support and a load we clearly cannot support.
 
@@ -284,16 +285,14 @@ When measuring these numbers we ran into some interesting problems. For one, the
 	\coldreadpi
 	\centering
 	\pgfplotstabletypeset[
-     	columns={nrps, nanswers, orps, oanswers},
+     	columns={orps, oanswers},
      	every head row/.style={after row=\hline},
 		every last row/.style={after row=\hline},
-		columns/nrps/.style={column name=Queries per sec},
-		columns/nanswers/.style={column name=received(\%)},
-		columns/orps/.style={column name=Rps(O)},
-		columns/oanswers/.style={column name=received(\%)(O))},
+		columns/orps/.style={column name=Queries per second},
+		columns/oanswers/.style={column name=received(\%)},
      	]
     {\coldreadpi}
-    \caption{Cold reads Pi cluster. Queries per second, and results received in \%. (O) is with code optimization}
+    \caption{Cold reads Pi cluster. Queries per second, and results received in \%.}
 \label{tab:coldread_pi}
 \end{table}
 
@@ -303,24 +302,23 @@ When measuring these numbers we ran into some interesting problems. For one, the
 	\centering
 
 	\pgfplotstabletypeset[
-     	columns={nrps, nanswers, orps, oanswers},
+     	columns={orps, oanswers},
      	every head row/.style={after row=\hline},
 		every last row/.style={after row=\hline},
-		columns/nrps/.style={column name=Rps},
-		columns/nanswers/.style={column name=received(\%)},
-		columns/orps/.style={column name=Rps(O)},
-		columns/oanswers/.style={column name=received(\%)(O)},
+		columns/orps/.style={column name=Queries per second},
+		columns/oanswers/.style={column name=received(\%)},
      	]
     {\coldreadmac}
-    \caption{Cold reads MacBook. Queries per second, and results received in \%. (O) is with code optimization}
+    \caption{Cold reads MacBook. Queries per second, and results received in \%.}
 \label{tab:coldread_mac}
 \end{table}
 
-Without optimization the Pi cluster is able to support around 3000 requests per second. This is 60\% of the load it could handle previously. We also see that the code optimization does increase this number to 80\%.
+Without optimization the Pi cluster is able to support around 4425 queries per second. This is 67\% of the load it can handle after it has been running for a while.
 
-The Macbook fared similarly. At only around 5500 rps the performance is halved. With the optimization the performance is somewhere between 7000 and 10000.
+The MacBook Pro performed worse. At only around 8000 queries per second the MacBook is severely crippled by all the disk access. 
 
-We did expect the cluster to gain some ground when we forced this much disk access. However as the MacBook runs on flash storage with reading speeds of up to 400MB/s and the poor Pis have SD-cards providing 5-8MB/s, the MacBook does have an unfair advantage.
+We did expect the cluster to gain some ground when we forced this much disk access. We believe this is mostly due to the Pis parallel disk access. It is also worth noting that the MacBook Pro is benchmarked with random reads at around 45.7MB/s and sequential reads at 450MB/s. The Raspberry Pis can perform random reads at approximately 2.9-7MB/s and sequential reads at approximately 17MB/s
+
 
 \subsection{Overclocked Pis}
 As it turns out every operation in our system is bounded by CPU speed, it would be reasonable to expect enhanced performance by overclocking the CPU.
