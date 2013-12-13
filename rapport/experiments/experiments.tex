@@ -139,6 +139,8 @@ As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase
 	\pgfplotstableread{../datasets/mac_energy_1core.txt}\maconecore
 	
 	\pgfplotstableread{../datasets/mac_energy_2core.txt}\mactwocore
+
+	\pgfplotstableread{../datasets/req_comp_pi.txt}\reqcomppi
 	
 	
 
@@ -156,9 +158,9 @@ As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase
 	ymax = 500,
 	ymin = 0
 	]
-	\addplot table[x = request, y = reqwatt] from \loadwattreq ;
+	\addplot table[x = reqload, y = wattreqload] from \reqcomppi ;
 	\addlegendentry{LoadDist} ;
-	\addplot table[x = requests, y = reqwatt] from \noloadwattreq ;
+	\addplot table[x = reqnoload, y = wattreqnoload] from \reqcomppi ;
 	\addlegendentry{NoDist} ;
 	\addplot table[x = requests, y = reqwatt] from \maconecore ;
 	\addlegendentry{Mac1Core} ;
