@@ -2,17 +2,27 @@ TODO
 
 ideas:
 
+abstract:
+siste setning, var sikker på om vi kan si peak load er promising eller om det er failure.
+
+
 fikse engelsk tallsystem (komma på lange tall for å skille tusinger)
 
+optimize c-port:
+    ekkel setning:
+        This proved it both challenging and useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
 
+results:
+    finn cpuload ved breakpoint med 1 load distr, kap 7.1.1
 
+results: mac vs pi:
+    brukt kraftigere pc for å teste begge kjernekjøring av search_bin på mac.
 
+Results cold reads:
+    fjerne resultater om optimized code, kun inkluder disse.
 
-
-
-
-
-
+experiments.experiences with C and Python
+    FIX TABLE LOOK
 
 
 overclock:

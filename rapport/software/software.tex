@@ -153,15 +153,15 @@ The messages from the load distributor to the worker nodes includes information 
 This scheme is simple, but could also prove to be a bottleneck of the system. Seeing as all communication has to go through this node we could end up with the performance of the cluster being limited by the load distributor.
 
 \subsection{Original search engine - python version}
-The python version we were basing our program on, relied heavily upon the python library Natural Language Toolkit\cite{nltk} (NLTK).
+The python version we were basing our program on, relied heavily upon the Python library Natural Language Toolkit\cite{nltk} (NLTK).
 NLTK provides a lot of useful methods for processing natural languages in Python, including different tools for stemming and other tokenization tricks.
 Stemming is the process of reducing inflected or conjugated words into their basic or root form. Examples include removal of prefixes, suffixes, tense and vowel changes. I.e. words like ``fishing'', ``fisher'' and ``fished'' all end up mapping to the same stem ``fish''.
 
 The toolkit also provides stop word lists (words like {\em and}, {\em or}, {\em on}, {\em the} and so on) and improved splicing of natural language sentences into token.
-NLTK however only exist for python, so if we were to write a C version, we would have to port the library, or at least the functionality we use.
+NLTK however only exist for Python, so if we were to write a C version, we would have to port the library, or at least the functionality we use.
 As this is a lot of work to implement, and well beyond the scope of our work here, we have chosen to do the indexing in python and deliver and calculate search results based only on the stemmed forms for the C program.
 
-The indexing is a very slow operation. It is however done very rarely, and only when incorporating new documents (new corpus) into the search results. This operation is in our case not even time critical, so we think it is a fair simplification to leave this job for a faster computer that can run python.
+The indexing is a very slow operation. It is however done very rarely, and only when incorporating new documents (new corpus) into the search results. This operation is in our case not even time critical, so we think it is a fair simplification to leave this job for times of low activity or a faster computer that can run Python.
 
 \subsection{Optimized C-port}
 In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds on the cluster. We therefore decided to rewrite the search program using C. This proved it both challenging and useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.

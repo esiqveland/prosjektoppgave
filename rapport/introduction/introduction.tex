@@ -6,8 +6,8 @@ This section discusses the background for our project, what goals we have and th
 
 Section \ref{sec:related} briefly explores related work.
 In Section \ref{sec:hardware}, we introduce the properties of the hardware we will be using, and look at alternatives.
-Section \ref{sec:software} explains the software we have built for this project as well as configuration of the nodes.
-Section \ref{sec:build} shows how we built the hardware of the system we will be using as well as the structure for that holds our cluster.
+Section \ref{sec:software} explains the software we have built for this project as well as configuration of the operating system.
+Section \ref{sec:build} shows how we built the hardware of the system we will be using as well as the physical structure that holds our cluster.
 In Section \ref{sec:setup} we explain how we set up our system for experiments and do measuring.
 Section \ref{sec:experiments} contains the results and discussion of our work.
 Section \ref{sec:conclusion} contains our conclusion as well as further work that could be applied to the cluster.
@@ -15,9 +15,9 @@ Section \ref{sec:conclusion} contains our conclusion as well as further work tha
 \subsection{Background}
 Energy consumption and the corresponding heat dissipation is becoming a considerable challenge in computer centers and super computers. Today most large scale computers use powerful multi core CPUs and have tens if not hundreds of gigabytes of RAM. In addition to potentially being very expensive up front in the acquisition, there is also a lot of cost associated with operating these computers. We don't have to look any further than the IBM produced Roadrunner (completed 2009), which while still being the 22nd fastest computer in the world, was shut down in March 2013 because it was no longer worth the power bill related to operating it.\cite{roadrunner}
 
-Much research today is related to making computers more power efficient. Intels newly released Haswell micro architecture brings significant improvements to laptop power efficiency. This was also the case for the previous generation. However these improvements are mostly related to saving power by slowing down the cores whenever theres lack of work.
+Much research today is related to making computers more power efficient. Intels newly released Haswell micro architecture brings significant improvements to laptop power efficiency. This was also the case for the previous generation. However these improvements are mostly related to saving power by slowing down the cores and powering down parts whenever theres lack of work.
 
-Another interesting area is in the mobile processor market. ARM processors are very light weight and typically run very efficiently. These cores are simpler and a lot slower than traditional CPUs, however they are very cheap and sold at large scale. 
+Another interesting area is in the mobile processor market. ARM processors are very light weight and typically run very efficiently. These cores are simpler and a lot slower than traditional CPUs, however they are very cheap and sold at large scale.
 
 The demand for computing power is ever increasing. While performance has grown steadily, energy efficiency has not seen the same improvements.
 The performance has increased many fold over the last decades, but energy efficiency has not been able to follow. This means that the more powerful computers, while powerful, consume larger and larger amounts of energy.
@@ -25,14 +25,14 @@ Especially in the realm of supercomputers, it has typically displayed the featur
 There has however been some signs in the last few years that this trend might be turning around\cite{green500}.
 Scogland et al.\cite{green500} reportedly find it likely that using less intelligent cores is a likely contributor to the increase seen in energy efficiency in small to large supercomputers in the later years.
 
-On the other end, small single board system on chip computers are getting increasingly popular. 
+On the other end, small single board system on chip computers are getting increasingly popular.
 We will look at how a set of these low energy devices compare up to an ordinary laptop computer if we take energy consumption and performance into account. We will try to answer if they can be used for cost efficiently scaling a system to different workloads.
 
 In this report we explain how we built a low power hardware system, the software to stress test it, and then discuss this system's performance and energy efficiency compared to a reference system. Our focus will be on delivering query results from a information retrieval system, stressing the two likely slowest parts of the Pi:
 It's disk access and network.
 
 \subsection{Goals}
-In this project we have several questions we want to answer:
+In this project we have two main questions we want to answer:
 \begin{enumerate}
 \item How does a cluster of Raspberry Pi nodes compare to a MacBook Pro running i5?
 \item Can we scale our cluster efficiently?

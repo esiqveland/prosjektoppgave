@@ -1,100 +1,4 @@
 \clearpage
-
-\section{Setup}
-\label{sec:setup}
-
-In this section we explain how we set up the experiments with the cluster to see how it performs. We will later list these results and discuss and compare these to results from a MacBook Pro Late 2012.
-
-\subsection{Introduction}
-We plan on running these experiments in two phases, first to identify areas where improvement can be made along with bottlenecks and then after attempting to mitigate these to see if any improvement was made, and see where we can end up.
-
-We currently have 3 hardware configurations. The 8 node cluster can be split into:
-
-\begin{enumerate}
-\item 1 load distributor and 7 worker nodes
-\item 8 worker nodes
-\item 5 worker nodes (overclock)
-\end{enumerate}
-
-The overclock mode is reduced to 5 workers because the last 3 nodes refused to run properly at the overclocked speed, or didn't boot at all.
-
-In addition we will also look at the i5 MacBook with 1 and 2 threads.
-
-\subsection{Setup}
-The setup is the cluster of 8 PI-nodes. Since we are limited by the 8 ports on our switch, we have the load distributor and the load generator connected to another D-Link router that is then connected to the switch.
-Also note that we need to be wary of this bottlenecking our total bandwidth to the 7 worker nodes through one cable.
-This means we can at most hope to push 100Mbit/s of data to the workers {\em in total}.
-The network layout is illustrated in Figure \ref{fig:network}.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{experiments/networklayout}
-    \caption{The network layout for the testing environment.}
-    \label{fig:network}
-\end{figure}
-
-
-\subsection{Result gathering}
-To obtain results we use a combination of controlling sending, output from the system and measuring the power consumed. To measure power usage we have a COITECH power consumption tool that is placed between the power outlet and our power adapters.
-This lets us read the current power consumed by the whole system.
-
-Our load generation utility has a few parameters for us to control. The number of queries to be sent, sending interval, number of threads and the set of nodes to which to send.
-
-\subsection{MacBook Pro control}
-When comparing on the MacBook, the load generator is run on a Mac Mini and the search program is run, either in one instance to test single core performance, or in two instances to utilize both the cores.
-When running two instances these two operate on different ports.
-
-\subsection{Overclocked Pis}
-Overclocking is the process of making a computer operate at a faster clock rate than the manufacturer intended.
-This is most often done by changing software parameters, typically by increasing the memory frequency, core frequency and/or operating voltage to make it stable at a higher clock rate.
-Side effects of this process is an increase in power consumption and heat dissipation, and in some cases leads to system instability or even permanent damage to the components.
-
-The Raspberry PI is very simple to overclock. By editing boot config-file one can easily change the CPU parameters.
-
-This file can be found under:
-
-\begin{lstlisting}
-\boot\config.txt
-\end{lstlisting}
-
-\begin{lstlisting}
-## Some overclocking settings, cpu govenor is set to ondemand
-
-##None
-#arm_freq=700
-#core_freq=250
-#sdram_freq=400
-#over_voltage=0
-
-##Modest
-#arm_freq=800
-#core_freq=300
-#sdram_freq=400
-#over_voltage=0
-
-##High
-#arm_freq=950
-#core_freq=450
-#sdram_freq=450
-#over_voltage=6
-
-##Turbo
-arm_freq=1000
-core_freq=500
-sdram_freq=600
-over_voltage=6
-\end{lstlisting}
-
-We went for the Turbo mode, which is the fastest recommended mode by the creators of Raspberry Pi that generally shows stable operation.
-This mode increases the memory frequency by 50\%.  the GPU frequency which also drives the L2 cache for the CPU.
-Doubling the L2 cache frequency is the main reason we chose Turbo mode, with synthetic tests showing over 50\% gains in performance\cite{overclock} from this overclock.
-The L2 cache is really important as it is the main source of caching before the memory.
-
-Unfortunately for us, only 5 of our units were able to run stably at the increased speed.
-We saw both data corruption on the SD card, unable to completely boot, and general random runtime errors from three of the boards.
-We therefore chose to do the overclocked tests with only 5 workers, seeing as the performance scales fairly linearly in our cases.
-
-\clearpage
 \section{Results}
 \label{sec:experiments}
 
@@ -103,13 +7,13 @@ Here follows our results from the testing.
 \subsection{Maximum throughput}
 We started out by looking at how many queries we could answer with the cluster, i.e. maximum throughput.
 
-In order to find this we use a load generator which creates random queries and send these at various intervals to the cluster. As the traffic is UDP we expect to see a drop in answers from once the system is over saturated. The load generator is run on a lot more powerful computer outside the cluster.
+In order to find this we use a load generator which creates random queries and send these at various intervals to the cluster. As the traffic is UDP we expect to see a drop in answers from once the system is over saturated. The load generator is run on a more powerful computer outside the cluster.
 
 We do this first by sending queries through a proxy of sorts, the load distributor, which chooses a random worker node to send the query to, then the worker sends the result back to the original client.
 Later, we look at exposing direct worker access at the client.
 
 \subsubsection{1 load distributor and 7 workers}
-From the numbers in Table \ref{tab:cluster_load_dir} we see that there is a clear drop in performance at around 4400 requests per second. If we increase the load from this point we see a drastic loss in received responses. At this rate the load distributor is running on close to 100\% CPU while the workers are running at around 80\%. So we have reason to believe that the load distributor is holding back the system, effectively being the bottleneck.
+From the numbers in Table \ref{tab:cluster_load_dir} we see that there is a clear drop in performance at around 4300 requests per second. If we increase the load from this point we see a drastic loss in received responses. At this rate the load distributor is running on close to 100\% CPU while the workers are running at around 80\%. So we have reason to believe that the load distributor is holding back the system, effectively being the bottleneck.
 
 \pgfplotstableread{../datasets/cluster_load_dir_requests.txt}\clusterloaddir
 \begin{table}[h]
@@ -119,7 +23,7 @@ From the numbers in Table \ref{tab:cluster_load_dir} we see that there is a clea
      	every head row/.style={before row=\hline,
      	after row=\hline},
 		every last row/.style={after row=\hline},
-		columns/requests/.style={column name=Requests per second},
+		columns/requests/.style={column name=Queries per second},
 		columns/received/.style={column name=\% queries served},
      	]
     {\clusterloaddir}
@@ -212,7 +116,7 @@ As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase
 	xlabel = active nodes,
 	xmax = 9,
 	xmin = 0,
-	ylabel = requests per Watt,
+	ylabel = Queries per Watt,
 	ymax = 200,
 	ymin = 0
 	]
@@ -231,12 +135,12 @@ As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase
      	every head row/.style={before row=\hline,
      	after row=\hline},
 		every last row/.style={after row=\hline},
-		columns/requests/.style={column name=Requests per second},
+		columns/requests/.style={column name=Queries per second},
 		columns/watt/.style={column name=Watt},
-		columns/reqwatt/.style={column name=Requests per watt},
+		columns/reqwatt/.style={column name=Queries per watt},
      	]
     {\clusterreqwattnode}
-	\caption{Efficieny with various nodes}
+	\caption{Efficiency with various nodes}
 \label{tab:cluster_reqwattnode}
 \end{table}
 
@@ -279,7 +183,7 @@ This was implemented by having one thread in the client for each node in the clu
      	every head row/.style={before row=\hline,
      	after row=\hline},
 		every last row/.style={after row=\hline},
-		columns/requests/.style={column name=Requests per second},
+		columns/requests/.style={column name=Queries per second},
 		columns/received/.style={column name=\% queries served},
      	]
     {\clusteronlyworkers}
@@ -300,16 +204,16 @@ We will run the same test as in phase 1 where we try to find the breakpoint for 
      	after row=\hline},
 		every last row/.style={after row=\hline},
 		columns/nodes/.style={column name=Active nodes},
-		columns/requests/.style={column name=Requests per second},
+		columns/requests/.style={column name=Queries per second},
 		columns/watt/.style={column name=Watt},
-		columns/reqwatt/.style={column name=Requests per watt},
+		columns/reqwatt/.style={column name=Queries per watt},
      	]
     {\clusterworkerreqwatt}
     \caption{Efficiency with various nodes without load balancer}
 \label{tab:cluster_worker_req_watt}
 \end{table}
 
-As we can see in Table \ref{tab:cluster_worker_req_watt} we are able to achieve 242 requests per second per watt.
+As we can see in Table \ref{tab:cluster_worker_req_watt} we are able to achieve 242 queries per second per watt.
 This is an increase of 54\%.
 This follows from now utilizing all the workers fully as well as having one extra node doing work instead of doing load distribution.
 
@@ -339,9 +243,9 @@ We also see that how many requests we send to it reflect in the amount of power 
      	every head row/.style={before row=\hline,
      	after row=\hline},
 		every last row/.style={after row=\hline},
-		columns/requests/.style={column name=Requests per second},
+		columns/requests/.style={column name=Queries per second},
 		columns/watt/.style={column name=Watt},
-		columns/reqwatt/.style={column name=Requests per watt},
+		columns/reqwatt/.style={column name=Queries per watt},
      	]
     {\macenenrgyonecore}
     \caption{Mac efficiency 1 core}
@@ -357,12 +261,12 @@ We also see that how many requests we send to it reflect in the amount of power 
      	every head row/.style={before row=\hline,
      	after row=\hline},
 		every last row/.style={after row=\hline},
-		columns/requests/.style={column name=Requests per second},
+		columns/requests/.style={column name=Queries per second},
 		columns/watt/.style={column name=Watt},
-		columns/reqwatt/.style={column name=Requests per watt},
+		columns/reqwatt/.style={column name=Queries per watt},
      	]
     {\macenergytwocore}
-    \caption{Mac efficiency 2 core}
+    \caption{Mac efficiency, program running on 2 cores}
 \label{tab:mac_energy_2core}
 \end{table}
 
@@ -383,13 +287,13 @@ When measuring these numbers we ran into some interesting problems. For one, the
      	columns={nrps, nanswers, orps, oanswers},
      	every head row/.style={after row=\hline},
 		every last row/.style={after row=\hline},
-		columns/nrps/.style={column name=Rps},
+		columns/nrps/.style={column name=Queries per sec},
 		columns/nanswers/.style={column name=received(\%)},
 		columns/orps/.style={column name=Rps(O)},
 		columns/oanswers/.style={column name=received(\%)(O))},
      	]
     {\coldreadpi}
-    \caption{Cold reads Pi cluster. Requests per second, and answers received in \%. (O) is with code optimization}
+    \caption{Cold reads Pi cluster. Queries per second, and results received in \%. (O) is with code optimization}
 \label{tab:coldread_pi}
 \end{table}
 
@@ -408,7 +312,7 @@ When measuring these numbers we ran into some interesting problems. For one, the
 		columns/oanswers/.style={column name=received(\%)(O)},
      	]
     {\coldreadmac}
-    \caption{Cold reads MacBook. Requests per second, and answers received in \%. (O) is with code optimization}
+    \caption{Cold reads MacBook. Queries per second, and results received in \%. (O) is with code optimization}
 \label{tab:coldread_mac}
 \end{table}
 
@@ -429,16 +333,39 @@ We started out by overclocking one node and then run some tests. Everything seem
 We were able to see an increase in throughput of around 10\% with the cores overclocked. This number was a lot lower than expected taking into account that the cluster was using 21 watts compared to 16 without the overclock. At this rate the cluster can deliver 133 requests per watt, compared to 152 without the overclock. So this was generally bad value.
 
 
-\section{Further optimization}
-In an attempt to further improve our performance we have tried some optimization in our code. One of them being changing the load distributor from using $$rand() \bmod N,$$ where N is the number of nodes in the cluster, to just keeping iterating over the range 1-7 instead. We did however not notice any change from that.
+\subsection{Experiences with {C} and Python}
+The first testings of the C-port showed significant improvements in delivery speed.
+It further confirmed that managing memory yourself is desirable for performance, and is especially important in an environment where resources are scarce.
+When blasting the searching code with queries, we quickly maxed out the available memory.
+These memory leaks were later fixed, and the program now experiences constant memory usage.
 
-Originally we always sent queries as 1024 byte messages. This was done for simplicity but of course at a cost of performance. By instead sending only as many bytes as needed we saw a dramatic increase in performance. Doing all measurements again was not an option but we did measure some values for comparison again.
+The difference in developing platform, with x86\_64 Darwin compared to the ARMv6 runtime environment did not impose any extra difficulties, except for a single case of some odd pointer behavior.
+The rest of the time, the code behaved as expected from one platform to the other, for both Python and C.
 
+For comparison between the two languages, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the Pi, both for Python and {C}.
+The results are given in Table \ref{tbl:runtimes_ports}.
 
+For the relatively quick {Core i5}, the python code need 10 times longer to run the queries than the C code. This difference in performance seem reasonable compared to what is known about the differences between interpreted dynamic languages and C.
+The slower Python code is however detrimental to the performance for the weaker Pi. The same 100,000 queries takes 84 seconds to run in C, but takes close to 2047 seconds in Python, 24 times longer.
 
+\begin{table}[h]
+    \begin{center}
+    \begin{tabular}{|r|r|r|r|}
+    \hline
+       & \multicolumn{1}{|c|}{MacBook} & \multicolumn{1}{|c|}{PI (OC)}  & \multicolumn{1}{|c|}{PI} \\
+    \hline
+    C      & 4.78 & 55.93 & 84.75     \\
+    \hline
+    Python & 49.41 & 1268.89 & 2046.77   \\
 
+    \hline
+    \end{tabular}
+    \caption{Runtime (in seconds) for C and Python code on 100,000 queries. OC is the overclocked Pi.}
+    \label{tbl:runtimes_ports}
+    \end{center}
+\end{table}
 
-
+Further we found a problem with our message generating code. Originally we always sent queries as 1024 byte messages. This was done for simplicity but of course at a cost of performance. By instead sending only as many bytes as needed we saw a dramatic increase in performance.
 
 
 
