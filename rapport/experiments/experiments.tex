@@ -128,6 +128,42 @@ As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase
 	\caption{Plot showing the number of queries we can service per watt with number of workers increasing}
 \end{figure}
 
+\begin{figure}[!h]
+\centering
+	\begin{tikzpicture}
+	\pgfplotstableread{../datasets/cluster_load_dist_request_watt_per_node.txt}\loadwattreq
+	
+	\pgfplotstableread{../datasets/cluster_only_workers_request_watt_per_node.txt}\noloadwattreq
+	
+	\pgfplotstableread{../datasets/mac_energy_1core.txt}\maconecore
+	
+	\pgfplotstableread{../datasets/mac_energy_2core.txt}\mactwocore
+	
+	
+
+
+	\begin{axis}
+	[
+	xlabel = request rate,
+	xmax = 5000,
+	xmin = 0,
+	ylabel = Queries per Watt (w),
+	ymax = 1000,
+	ymin = 0
+	]
+	\addplot table[x = request, y = reqwatt] from \loadwattreq ;
+	\addlegendentry{LoadDist} ;
+	\addplot table[x = requests, y = reqwatt] from \noloadwattreq ;
+	\addlegendentry{NoDist} ;
+	\addplot table[x = requests, y = reqwatt] from \maconecore ;
+	\addlegendentry{Mac1Core} ;
+	\addplot table[x = requests, y = reqwatt] from \mactwocore ;
+	\addlegendentry{Mac2Core} ;
+	\end{axis}
+	\end{tikzpicture}
+	\caption{Test graph}
+\end{figure}
+
 \begin{table}
 	\pgfplotstableread{../datasets/cluster_load_dist_request_watt_per_node.txt}
 	\clusterreqwattnode
@@ -322,6 +358,7 @@ The MacBook Pro loses a lot more performance. At only around 8000 queries per se
 
 
 We did expect the cluster to gain some ground when we forced this much disk access. We believe this is mostly due to the Pis parallel disk access. It is also worth noting that the MacBook Pro is benchmarked with random reads at around 45.7MB/s and sequential reads at 450MB/s. The Raspberry Pis can perform random reads at approximately 3MB/s and sequential reads at approximately 17MB/s
+
 
 
 \subsection{Overclocked Pis}
