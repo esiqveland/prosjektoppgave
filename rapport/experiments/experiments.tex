@@ -360,24 +360,25 @@ We started out by overclocking one node and then run the tests. Everything seeme
 \end{table}
 
 \begin{table}[h]
-	\pgfplotstableread{../datasets/oc_one_core.txt}
-	\oconecore
+	\pgfplotstableread{../datasets/oc_cluster_performance.txt}
+	\occluster
 	\centering
 
 	\pgfplotstabletypeset[
-     	columns={request, clock, gain},
+     	columns={request, received, watt, reqwatt},
      	every head row/.style={after row=\hline},
 		every last row/.style={after row=\hline},
-		columns/request/.style={column name=Queries per second},
-		columns/clock/.style={column name=Clock(MHz)},
-		columns/gain/.style={column name=Gain(\%)},
+		columns/requests/.style={column name=Queries per second},
+		columns/received/.style={column name=\% queries served},
+		columns/watt/.style={column name=Watt},
+		columns/reqwatt/.style={column name=Queries per watt},
      	]
-    {\oconecore}
-    \caption{Performance increase by overclocking one node}
-\label{tab:oconecore}
+    {\occluster}
+    \caption{Performance increase with 5 nodes overclocked}
+\label{tab:occluster}
 \end{table}
 
-From table \ref{tab:oconecore} we see that we were able to increase the performance of one node by as much as 60\%. If we 
+From table \ref{tab:oconecore} we see that we were able to increase the performance of one node by as much as 60\%. For the cluster of 5 nodes we were able to get an increase in performance of almost 60\%. This also includes an increase in requests per watt by 40\%
 
 
 
