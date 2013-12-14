@@ -101,9 +101,9 @@ A source of error that we would like to mention is that the the measuring tool d
 
 \subsubsection{Varying amount of nodes in the cluster}
 We also want to vary the amount of nodes that are active in the cluster and plot performance and power consumption to see how it scales.
-This is one of the more interesting experiments as one of the strengths of this cluster is that it is easy to power down nodes during hours of low load. We did not get to implement this feature, but it can be done. We will also plot the amount of queries we can deliver per watt used with differing numbers of nodes running.
+This is one of the more interesting experiments as one of the strengths of this cluster is that it is easy to power down nodes during hours of low load. We did not get to implement this feature, but it can be done. We will also plot the amount of queries we can deliver per Joule used with differing numbers of nodes running.
 
-As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase in requests we can service per watt every time we add a node to the cluster until we reach five workers. At this point the load distributor is at max capacity and we are unable to utilize the workers fully.
+As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase in requests we can service per Joule every time we add a node to the cluster until we reach five workers. At this point the load distributor is at max capacity and we are unable to utilize the workers fully.
 
 \begin{figure}[!h]
 \centering
@@ -115,14 +115,14 @@ As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase
 	xlabel = active nodes,
 	xmax = 9,
 	xmin = 0,
-	ylabel = Queries per Watt,
+	ylabel = Queries per Joule,
 	ymax = 200,
 	ymin = 0
 	]
 	\addplot table[y = reqwatt] from \clusterreqwattnode ;
 	\end{axis}
 	\end{tikzpicture}
-	\caption{Plot showing the number of queries we can service per Watt with increasing number of workers.}
+	\caption{Plot showing the number of queries we can service per Joule with increasing number of workers.}
 \end{figure}
 
 
@@ -135,9 +135,10 @@ As we can see from Table \ref{tab:cluster_reqwattnode} we have a steady increase
      	columns={nodes,request,	watt, reqwatt},
      	every head row/.style={after row=\hline},
 		every last row/.style={after row=\hline},
-		columns/requests/.style={column name=Queries per second},
+		columns/nodes/.style={column name=Nodes},
+		columns/request/.style={column name=Queries per second},
 		columns/watt/.style={column name=Watt},
-		columns/reqwatt/.style={column name=Queries per watt},
+		columns/reqwatt/.style={column name=Queries per Joule},
      	]
     {\clusterreqwattnode}
 	\caption{Efficiency with varying amounts of workers.}
@@ -274,48 +275,7 @@ It is apparent that under maximum load there is no way the Pis can contest the M
 However it is interesting to see how our system compares on lower request rates compared to the MacBook.
 At request rates that are within the limits of our system, the system performs comparable to the MacBook. One could argue that the cost of a MacBook Pro system is comparable regarding performance. A MacBook Pro runs at about 4 times what it cost to build the cluster. It is however apparent that we could never match the MacBook on power efficiency for CPU intensive work.
 
-\begin{figure}[!h]
-\centering
 
-        \begin{tikzpicture}
-        \pgfplotstableread{../datasets/cluster_load_dist_request_watt_per_node.txt}\loadwattreq
-        
-        \pgfplotstableread{../datasets/cluster_only_workers_request_watt_per_node.txt}\noloadwattreq
-        
-        \pgfplotstableread{../datasets/mac_energy_1core.txt}\maconecore
-        
-        \pgfplotstableread{../datasets/mac_energy_2core.txt}\mactwocore
-
-        \pgfplotstableread{../datasets/req_comp_pi.txt}\reqcomppi
-
-        \begin{axis}
-        [
-        xlabel = request rate,
-        xmax = 12000,
-        xmin = 0,
-        ylabel = Queries per Watt (w),
-        legend style = {
-                at={(0.0,1.0)},
-                anchor=north west
-        },
-        ymax = 500,
-        ymin = 0,
-        width = 400
-        ]
-        \addplot table[x = reqload, y = wattreqload] from \reqcomppi ;
-        \addlegendentry{LoadDist} ;
-        \addplot table[x = reqnoload, y = wattreqnoload] from \reqcomppi ;
-        \addlegendentry{NoDist} ;
-        \addplot table[x = requests, y = reqwatt] from \maconecore ;
-        \addlegendentry{Mac1Core} ;
-        \addplot table[x = requests, y = reqwatt] from \mactwocore ;
-        \addlegendentry{Mac2Core} ;
-        \end{axis}
-        \end{tikzpicture}
-        \caption{Test graph}
-\end{figure}
-
-\subsubsection{Summary}
 
 \subsubsection{Cold reads}
 \label{sec:coldread}
@@ -335,7 +295,7 @@ When measuring these numbers we ran into an interesting problem. The resolution 
 		columns/oanswers/.style={column name=Queries served (\%)},
      	]
     {\coldreadpi}
-    \caption{Cold reads for the Pi cluster.}
+    \caption{Performance on cold reads for the Pi cluster.}
 \label{tab:coldread_pi}
 \end{table}
 
@@ -352,7 +312,7 @@ When measuring these numbers we ran into an interesting problem. The resolution 
 		columns/oanswers/.style={column name=Queries served (\%)},
      	]
     {\coldreadmac}
-    \caption{Cold reads for MacBook.}
+    \caption{Performance on cold reads for MacBook.}
 \label{tab:coldread_mac}
 \end{table}
 
@@ -413,6 +373,56 @@ We started out by overclocking one node and then run the tests. Everything seeme
 
 From table \ref{tab:oconecore} we see that we were able to increase the performance of one node by as much as 60\%. For the cluster of 5 nodes we were also able to get an increase in performance of almost 60\%. This also includes an increase in requests per Joule by 40\%. These results certainly shows how limited we are by the CPU on the Pis.
 
+
+\subsection{Summary}
+In Figure \ref{fig:biggraph} we have plotted the performance of the various systems for comparison. We see that on lower workloads our cluster performs comparable to the MacBook Pro. But as work increases and the MacBook Pro is able to fully utilize its power, the weaker computers quickly falls behind. We also see how much of a bottleneck the load distributer is when comparing it to the system without the load distributor. 
+
+As shown in Table \ref{tab:occluster} overclocking greatly increases the efficiency, but due to the instability of this mode, we do not see it as a realistic approach. However it does give us a hint of what might be achieved with future hardware or other middle of the road hardware like Intels Atom processors.
+
+The cold read experiment shows the benefit of highly parallel disk access. In the experiment the Raspberry Pis only suffered a performance loss of 33\% compared to the 67\% of the Macbook Pro.
+This confirms what others have found on random reads\cite{fawn}.
+
+\begin{figure}[h]
+\centering
+
+        \begin{tikzpicture}
+        \pgfplotstableread{../datasets/cluster_load_dist_request_watt_per_node.txt}\loadwattreq
+        
+        \pgfplotstableread{../datasets/cluster_only_workers_request_watt_per_node.txt}\noloadwattreq
+        
+        \pgfplotstableread{../datasets/mac_energy_1core.txt}\maconecore
+        
+        \pgfplotstableread{../datasets/mac_energy_2core.txt}\mactwocore
+
+        \pgfplotstableread{../datasets/req_comp_pi.txt}\reqcomppi
+
+        \begin{axis}
+        [
+        xlabel = request rate,
+        xmax = 12000,
+        xmin = 0,
+        ylabel = Queries per Joule,
+        legend style = {
+                at={(0.0,1.0)},
+                anchor=north west
+        },
+        ymax = 500,
+        ymin = 0,
+        width = 400
+        ]
+        \addplot table[x = reqload, y = wattreqload] from \reqcomppi ;
+        \addlegendentry{LoadDist} ;
+        \addplot table[x = reqnoload, y = wattreqnoload] from \reqcomppi ;
+        \addlegendentry{NoDist} ;
+        \addplot table[x = requests, y = reqwatt] from \maconecore ;
+        \addlegendentry{Mac1Core} ;
+        \addplot table[x = requests, y = reqwatt] from \mactwocore ;
+        \addlegendentry{Mac2Core} ;
+        \end{axis}
+        \end{tikzpicture}
+        \caption{The efficiency of the various systems showing queries per Joule at various query loads.}
+        \label{fig:biggraph}
+\end{figure}
 
 
 
