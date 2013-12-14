@@ -164,7 +164,7 @@ As this is a lot of work to implement, and well beyond the scope of our work her
 The indexing is a very slow operation. It is however done very rarely, and only when incorporating new documents (new corpus) into the search results. This operation is in our case not even time critical, so we think it is a fair simplification to leave this job for times of low activity or a faster computer that can run Python.
 
 \subsection{Optimized C-port}
-In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds on the cluster. We therefore decided to rewrite the search program using C. This proved it both challenging and useful to control what exactly is present in memory at every moment, in addition to the extra work of having to control memory allocation.
+In practice we experienced serious performance issues with our python code, often showing response times in the hundreds of milliseconds on the cluster. We therefore decided to rewrite the search program using C. This proved it both challenging and useful as we now were able to control exactly what is present in memory at every moment. However we now needed to control memory allocation which gave us some headaches.
 
 Our current implementation caches everything it looks up in memory. We did not have the time to write a proper system for managing the amount of memory consumed by the cache.
 This could lead to out of memory issues, but the internal structures will be within bounds of the size of the postings file, which is by far the most dominant element with regards to memory usage.
@@ -183,7 +183,7 @@ typedef struct {
 \end{lstlisting}
 \subsubsection{uthash}
 {\tt uthash} is a small library with a set of convenient preprocessor macros for creating and managing hash tables in C.
-{\tt uthash} does constant time $$O(1)$$ lookups, inserts and deletes, and comes with a number of different hash functions in case your key domain is not well suited for the default hash function.
+{\tt uthash} does constant time $O(1)$ lookups, inserts and deletes, and comes with a number of different hash functions in case your key domain is not well suited for the default hash function.
 {\tt uthash} can hash strings, integers, pointers and the bytes in a structure a pointer points to.
 
 \subsubsection{Experiences}
