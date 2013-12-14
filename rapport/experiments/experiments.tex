@@ -223,7 +223,7 @@ We are now able to service up to around 6500 queries per second. This is an 52.6
 Along with the increase in maximum performance we also see that it behaves a lot better under higher loads.
 If we compare the two methods we see that at around 5600 requests per second the load balancer is only able to serve around half its requests, while the cluster is answering 100\% of the requests without the load distributor.
 
-\subsection{Mac VS Cluster of Pis}
+\subsection{MacBook Pro VS Cluster of Pis}
 In this section we will explore how our system performs compared to a MacBook Pro running the same software. We will try to find the breakpoints of how much traffic the MacBook can handle and how efficient it can serve the requests. We test in two rounds. First only using 1 search process on the MacBook. This would then not utilize both cores on the CPU. Then we run two instances of the program simultaneously and see how well that performs. We will also measure the power consumption on the Mac under both idle and different loads.
 
 \subsubsection{Maximum throughput}
@@ -347,7 +347,7 @@ We started out by overclocking one node and then run the tests. Everything seeme
 		columns/gain/.style={column name=Gain(\%)},
      	]
     {\oconecore}
-    \caption{Peak performance increase by overclocking one node}
+    \caption{Peak performance increase by overclocking one node.}
 \label{tab:oconecore}
 \end{table}
 
@@ -366,7 +366,7 @@ We started out by overclocking one node and then run the tests. Everything seeme
 		columns/reqwatt/.style={column name=Queries per Joule},
      	]
     {\occluster}
-    \caption{Peak performance increase with 5 nodes overclocked}
+    \caption{Peak performance increase with 5 nodes overclocked.}
 \label{tab:occluster}
 \end{table}
 
@@ -411,13 +411,13 @@ This confirms what others have found on random reads\cite{fawn}.
         width = 400
         ]
         \addplot table[x = reqload, y = wattreqload] from \reqcomppi ;
-        \addlegendentry{LoadDist} ;
+        \addlegendentry{Load distributor} ;
         \addplot table[x = reqnoload, y = wattreqnoload] from \reqcomppi ;
-        \addlegendentry{NoDist} ;
+        \addlegendentry{Eight workers} ;
         \addplot table[x = requests, y = reqwatt] from \maconecore ;
-        \addlegendentry{Mac1Core} ;
+        \addlegendentry{MacBook 1 core} ;
         \addplot table[x = requests, y = reqwatt] from \mactwocore ;
-        \addlegendentry{Mac2Core} ;
+        \addlegendentry{MacBook  2 cores} ;
         \end{axis}
         \end{tikzpicture}
         \caption{The efficiency of the various systems showing queries per Joule at various query loads.}
