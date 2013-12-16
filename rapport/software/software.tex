@@ -185,36 +185,3 @@ typedef struct {
 {\tt uthash} is a small library with a set of convenient preprocessor macros for creating and managing hash tables in C.
 {\tt uthash} does constant time $O(1)$ lookups, inserts and deletes, and comes with a number of different hash functions in case your key domain is not well suited for the default hash function.
 {\tt uthash} can hash strings, integers, pointers and the bytes in a structure a pointer points to.
-
-\subsubsection{Experiences}
-The first testings of the C-port showed significant improvements in delivery speed.
-It further confirmed that managing memory yourself is desirable for performance, and is especially important in an environment where resources are scarce.
-When blasting the searching code with queries, we quickly maxed out the available memory.
-These memory leaks were later fixed, and the program now experiences constant memory usage.
-
-The difference in developing platform, with x86\_64 Darwin compared to the ARMv6 runtime environment did not impose any extra difficulties, except for a single case of some odd pointer behavior.
-The rest of the time, the code behaved as expected from one platform to the other, for both Python and C.
-
-For comparison between the two languages, we created a test set of 100,000 queries. We then ran this test set against the reference MacBook computer, and on the Pi, both for Python and {C}.
-The results are given in Table \ref{tbl:runtimes_ports}.
-
-For the relatively quick {Core i5}, the python code need 10 times longer to run the queries than the C code. This difference in performance seem reasonable compared to what is known about the differences between interpreted dynamic languages and C.
-The slower Python code is however detrimental to the performance for the weaker Pi. The same 100,000 queries takes 84 seconds to run in C, but takes close to 2047 seconds in Python, 24 times longer.
-
-\begin{table}[h]
-	\begin{center}
-	\begin{tabular}{|r|r|r|r|}
-	\hline
-	   & \multicolumn{1}{|c|}{MacBook} & \multicolumn{1}{|c|}{PI (OC)}  & \multicolumn{1}{|c|}{PI} \\
-	\hline
-	C      & 4.78 & 55.93 & 84.75     \\
-	\hline
-	Python & 49.41 & 1268.89 & 2046.77   \\
-
-	\hline
-	\end{tabular}
-	\caption{Runtime (in seconds) for C and Python code on 100,000 queries. OC is the overclocked Pi.}
-	\label{tbl:runtimes_ports}
-	\end{center}
-\end{table}
-
